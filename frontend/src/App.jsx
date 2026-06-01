@@ -5,9 +5,20 @@ import ReportView from "./components/ReportView";
 import CompareView from "./components/CompareView";
 
 const CITY_CONFIG = {
-  paris:   { center: [48.8566,  2.3522], zoom: 12 },
-  antwerp: { center: [51.2213,  4.4051], zoom: 12 },
-  london:  { center: [51.5074, -0.1278], zoom: 10 },
+  paris:   { center: [48.8566,  2.3522], zoom: 12, label: "Paris"   },
+  antwerp: { center: [51.2213,  4.4051], zoom: 12, label: "Antwerp" },
+  london:  { center: [51.5074, -0.1278], zoom: 10, label: "London"  },
+};
+
+const ASSET_LABELS_SHORT = {
+  toilets:          "Toilets",
+  benches:          "Benches",
+  waste_bins:       "Waste bins",
+  drinking_water:   "Drinking water",
+  fitness_stations: "Fitness",
+  bike_parking:     "Bike parking",
+  defibrillators:   "Defibrillators",
+  dog_areas:        "Dog areas",
 };
 
 export default function App() {
@@ -103,39 +114,55 @@ export default function App() {
   // ── render ────────────────────────────────────────────────────────────────
   const mapCfg = CITY_CONFIG[selection.city] ?? CITY_CONFIG.paris;
 
+  const availableCities = useMemo(
+    () => [...new Set(available.map((o) => o.city))],
+    [available]
+  );
+  const availableAssets = useMemo(
+    () => [...new Set(available.map((o) => o.asset))],
+    [available]
+  );
+
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Public Realm Planner</h1>
-
-        <div className="mode-toggle">
-          <button
-            className={`mode-btn ${mode === "map" ? "active" : ""}`}
-            onClick={() => setMode("map")}
-          >
-            Map
-          </button>
-          <button
-            className={`mode-btn ${mode === "compare" ? "active" : ""}`}
-            onClick={() => setMode("compare")}
-          >
-            Compare cities
-          </button>
+        <div className="header-top">
+          <h1>Public Realm Planner</h1>
+          <div className="mode-toggle">
+            <button
+              className={`mode-btn ${mode === "map" ? "active" : ""}`}
+              onClick={() => setMode("map")}
+            >
+              Map
+            </button>
+            <button
+              className={`mode-btn ${mode === "compare" ? "active" : ""}`}
+              onClick={() => setMode("compare")}
+            >
+              Compare
+            </button>
+          </div>
         </div>
 
         {mode === "map" && (
-          <nav className="city-selector">
-            {available.map((opt) => (
+          <nav className="header-selectors">
+            {availableCities.map((city) => (
               <button
-                key={`${opt.city}/${opt.asset}`}
-                className={`city-btn ${
-                  selection.city === opt.city && selection.asset === opt.asset
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() => setSelection({ city: opt.city, asset: opt.asset })}
+                key={city}
+                className={`sel-btn sel-btn--city ${selection.city === city ? "active" : ""}`}
+                onClick={() => setSelection((s) => ({ ...s, city }))}
               >
-                {opt.label}
+                {CITY_CONFIG[city]?.label ?? city}
+              </button>
+            ))}
+            <span className="sel-sep" />
+            {availableAssets.map((asset) => (
+              <button
+                key={asset}
+                className={`sel-btn sel-btn--asset ${selection.asset === asset ? "active" : ""}`}
+                onClick={() => setSelection((s) => ({ ...s, asset }))}
+              >
+                {ASSET_LABELS_SHORT[asset] ?? asset}
               </button>
             ))}
           </nav>

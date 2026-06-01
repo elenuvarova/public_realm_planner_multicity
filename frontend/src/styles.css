@@ -21,13 +21,18 @@ html, body, #root {
 .app-header {
   background: #0f172a;
   color: #f8fafc;
-  padding: 10px 20px;
+  padding: 8px 20px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+  z-index: 1000;
+}
+
+.header-top {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
-  z-index: 1000;
-  overflow: hidden;
 }
 
 .app-header h1 {
@@ -37,39 +42,49 @@ html, body, #root {
   flex-shrink: 0;
 }
 
-/* city selector — scrolls horizontally so it never pushes h1/toggle off screen */
-.city-selector {
+/* city + asset selector row */
+.header-selectors {
   display: flex;
-  gap: 6px;
-  margin-left: 4px;
-  overflow-x: auto;
-  flex: 1;
-  scrollbar-width: none;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
-.city-selector::-webkit-scrollbar {
-  display: none;
+.sel-sep {
+  display: inline-block;
+  width: 1px;
+  height: 16px;
+  background: #334155;
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 
-.city-btn {
-  background: #1e293b;
+.sel-btn {
+  background: transparent;
   border: 1px solid #334155;
-  padding: 4px 12px;
-  border-radius: 14px;
-  font-size: 0.75rem;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.72rem;
   color: #94a3b8;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
   white-space: nowrap;
 }
 
-.city-btn:hover {
-  background: #2d3f56;
+.sel-btn:hover {
+  background: #1e293b;
   color: #e2e8f0;
-  border-color: #4a6080;
+  border-color: #475569;
 }
 
-.city-btn.active {
+.sel-btn--city.active {
+  background: #1e40af;
+  border-color: #1e40af;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sel-btn--asset.active {
   background: #f97316;
   border-color: #f97316;
   color: #ffffff;
