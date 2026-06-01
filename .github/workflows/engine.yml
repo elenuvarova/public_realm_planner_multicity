@@ -8,7 +8,7 @@ on:
         default: paris
         required: false
       asset:
-        description: 'Asset type (toilets)'
+        description: 'Asset type: toilets | benches | waste_bins | drinking_water | fitness_stations | bike_parking | defibrillators | dog_areas'
         default: toilets
         required: false
       run_all:

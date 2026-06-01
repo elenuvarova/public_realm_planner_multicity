@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.0497,
+  "coverage_after": 0.0645,
+  "coverage_gain": 0.0149,
+  "newly_covered_demand_pct": 0.0149,
+  "coverage_steps": [
+    0.0497,
+    0.0515,
+    0.0533,
+    0.0548,
+    0.0563,
+    0.0577,
+    0.0591,
+    0.0605,
+    0.0618,
+    0.0632,
+    0.0645
+  ],
+  "city": "london",
+  "asset": "dog_areas",
+  "n_existing_assets": 80,
+  "n_candidates_pool": 6745,
+  "n_grid_cells": 16889
+}

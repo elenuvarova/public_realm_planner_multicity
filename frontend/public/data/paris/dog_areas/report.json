@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.1902,
+  "coverage_after": 0.3041,
+  "coverage_gain": 0.1139,
+  "newly_covered_demand_pct": 0.1139,
+  "coverage_steps": [
+    0.1902,
+    0.203,
+    0.2159,
+    0.2284,
+    0.2407,
+    0.2529,
+    0.2637,
+    0.274,
+    0.2841,
+    0.2942,
+    0.3041
+  ],
+  "city": "paris",
+  "asset": "dog_areas",
+  "n_existing_assets": 26,
+  "n_candidates_pool": 444,
+  "n_grid_cells": 1118
+}

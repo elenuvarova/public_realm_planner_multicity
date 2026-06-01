@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.3384,
+  "coverage_after": 0.4075,
+  "coverage_gain": 0.0691,
+  "newly_covered_demand_pct": 0.0691,
+  "coverage_steps": [
+    0.3384,
+    0.3464,
+    0.3544,
+    0.362,
+    0.3693,
+    0.3758,
+    0.3824,
+    0.3889,
+    0.3954,
+    0.4016,
+    0.4075
+  ],
+  "city": "antwerp",
+  "asset": "drinking_water",
+  "n_existing_assets": 94,
+  "n_candidates_pool": 939,
+  "n_grid_cells": 2310
+}

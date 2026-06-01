@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.3241,
+  "coverage_after": 0.4049,
+  "coverage_gain": 0.0808,
+  "newly_covered_demand_pct": 0.0808,
+  "coverage_steps": [
+    0.3241,
+    0.3358,
+    0.3462,
+    0.3549,
+    0.3632,
+    0.3711,
+    0.3787,
+    0.3857,
+    0.3922,
+    0.3986,
+    0.4049
+  ],
+  "city": "antwerp",
+  "asset": "dog_areas",
+  "n_existing_assets": 74,
+  "n_candidates_pool": 1614,
+  "n_grid_cells": 2310
+}

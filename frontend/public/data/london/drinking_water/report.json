@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.2078,
+  "coverage_after": 0.2165,
+  "coverage_gain": 0.0087,
+  "newly_covered_demand_pct": 0.0087,
+  "coverage_steps": [
+    0.2078,
+    0.2088,
+    0.2097,
+    0.2106,
+    0.2115,
+    0.2123,
+    0.2132,
+    0.214,
+    0.2149,
+    0.2157,
+    0.2165
+  ],
+  "city": "london",
+  "asset": "drinking_water",
+  "n_existing_assets": 517,
+  "n_candidates_pool": 6670,
+  "n_grid_cells": 16889
+}

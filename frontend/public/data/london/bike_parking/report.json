@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.8336,
+  "coverage_after": 0.8378,
+  "coverage_gain": 0.0042,
+  "newly_covered_demand_pct": 0.0042,
+  "coverage_steps": [
+    0.8336,
+    0.834,
+    0.8345,
+    0.8349,
+    0.8353,
+    0.8358,
+    0.8362,
+    0.8366,
+    0.837,
+    0.8374,
+    0.8378
+  ],
+  "city": "london",
+  "asset": "bike_parking",
+  "n_existing_assets": 27222,
+  "n_candidates_pool": 5539,
+  "n_grid_cells": 16889
+}

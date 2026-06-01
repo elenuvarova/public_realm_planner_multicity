@@ -14,8 +14,14 @@ function CoverageBar({ label, value, color }) {
 }
 
 const ASSET_LABELS = {
-  toilets: "toilets",
-  benches: "benches",
+  toilets:          "toilets",
+  benches:          "benches",
+  waste_bins:       "waste bins",
+  drinking_water:   "drinking water points",
+  fitness_stations: "fitness stations",
+  bike_parking:     "bike parking",
+  defibrillators:   "defibrillators",
+  dog_areas:        "dog areas",
 };
 
 export default function ControlPanel({

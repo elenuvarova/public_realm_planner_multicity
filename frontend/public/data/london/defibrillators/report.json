@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.2365,
+  "coverage_after": 0.2444,
+  "coverage_gain": 0.0079,
+  "newly_covered_demand_pct": 0.0079,
+  "coverage_steps": [
+    0.2365,
+    0.2374,
+    0.2382,
+    0.239,
+    0.2398,
+    0.2406,
+    0.2413,
+    0.2421,
+    0.2429,
+    0.2436,
+    0.2444
+  ],
+  "city": "london",
+  "asset": "defibrillators",
+  "n_existing_assets": 583,
+  "n_candidates_pool": 6683,
+  "n_grid_cells": 16889
+}

@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.5475,
+  "coverage_after": 0.5522,
+  "coverage_gain": 0.0047,
+  "newly_covered_demand_pct": 0.0047,
+  "coverage_steps": [
+    0.5475,
+    0.5479,
+    0.5484,
+    0.5489,
+    0.5494,
+    0.5498,
+    0.5503,
+    0.5508,
+    0.5512,
+    0.5517,
+    0.5522
+  ],
+  "city": "london",
+  "asset": "waste_bins",
+  "n_existing_assets": 9584,
+  "n_candidates_pool": 6318,
+  "n_grid_cells": 16889
+}

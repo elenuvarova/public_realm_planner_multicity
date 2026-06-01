@@ -1,0 +1,17 @@
+{
+"type": "FeatureCollection",
+"name": "selected",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "id": "cand_0377", "rank": 1, "Score": 20.95, "GapScore": 1.0, "EquityIndex": 0.7905, "demand_weight": 0.7882 }, "geometry": { "type": "Point", "coordinates": [ 4.4060527294824, 51.213972229035996 ] } },
+{ "type": "Feature", "properties": { "id": "cand_0364", "rank": 2, "Score": 39.3, "GapScore": 1.0, "EquityIndex": 0.607, "demand_weight": 0.5765 }, "geometry": { "type": "Point", "coordinates": [ 4.40051947358956, 51.205723701654577 ] } },
+{ "type": "Feature", "properties": { "id": "cand_1386", "rank": 3, "Score": 50.4, "GapScore": 0.9495, "EquityIndex": 0.5224, "demand_weight": 0.6294 }, "geometry": { "type": "Point", "coordinates": [ 4.448303844740669, 51.195059244924629 ] } },
+{ "type": "Feature", "properties": { "id": "cand_0400", "rank": 4, "Score": 46.15, "GapScore": 1.0, "EquityIndex": 0.5385, "demand_weight": 0.5765 }, "geometry": { "type": "Point", "coordinates": [ 4.400402844145664, 51.218148538208077 ] } },
+{ "type": "Feature", "properties": { "id": "cand_0074", "rank": 5, "Score": 46.93, "GapScore": 1.0, "EquityIndex": 0.5307, "demand_weight": 0.5765 }, "geometry": { "type": "Point", "coordinates": [ 4.349430231569891, 51.173586189580114 ] } },
+{ "type": "Feature", "properties": { "id": "cand_0422", "rank": 6, "Score": 35.91, "GapScore": 1.0, "EquityIndex": 0.6409, "demand_weight": 0.6824 }, "geometry": { "type": "Point", "coordinates": [ 4.411702138757489, 51.209795242063031 ] } },
+{ "type": "Feature", "properties": { "id": "cand_1383", "rank": 7, "Score": 50.49, "GapScore": 0.9502, "EquityIndex": 0.521, "demand_weight": 0.4706 }, "geometry": { "type": "Point", "coordinates": [ 4.466776665943014, 51.222551278060735 ] } },
+{ "type": "Feature", "properties": { "id": "cand_0362", "rank": 8, "Score": 55.61, "GapScore": 1.0, "EquityIndex": 0.4439, "demand_weight": 0.4706 }, "geometry": { "type": "Point", "coordinates": [ 4.456667648345978, 51.201217580026018 ] } },
+{ "type": "Feature", "properties": { "id": "cand_0005", "rank": 9, "Score": 55.89, "GapScore": 1.0, "EquityIndex": 0.4411, "demand_weight": 0.4706 }, "geometry": { "type": "Point", "coordinates": [ 4.388239051287441, 51.218913302268852 ] } },
+{ "type": "Feature", "properties": { "id": "cand_0437", "rank": 10, "Score": 61.12, "GapScore": 1.0, "EquityIndex": 0.3888, "demand_weight": 0.4176 }, "geometry": { "type": "Point", "coordinates": [ 4.411931201963316, 51.184939523464564 ] } }
+]
+}

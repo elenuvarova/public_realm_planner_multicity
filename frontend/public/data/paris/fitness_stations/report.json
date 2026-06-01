@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.4517,
+  "coverage_after": 0.5504,
+  "coverage_gain": 0.0987,
+  "newly_covered_demand_pct": 0.0987,
+  "coverage_steps": [
+    0.4517,
+    0.4636,
+    0.4738,
+    0.4839,
+    0.4938,
+    0.5033,
+    0.5127,
+    0.5221,
+    0.5316,
+    0.541,
+    0.5504
+  ],
+  "city": "paris",
+  "asset": "fitness_stations",
+  "n_existing_assets": 270,
+  "n_candidates_pool": 441,
+  "n_grid_cells": 1118
+}

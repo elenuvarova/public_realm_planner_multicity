@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.9882,
+  "coverage_after": 0.9983,
+  "coverage_gain": 0.0101,
+  "newly_covered_demand_pct": 0.0101,
+  "coverage_steps": [
+    0.9882,
+    0.9897,
+    0.9912,
+    0.9926,
+    0.994,
+    0.995,
+    0.996,
+    0.9968,
+    0.9974,
+    0.9978,
+    0.9983
+  ],
+  "city": "paris",
+  "asset": "bike_parking",
+  "n_existing_assets": 10924,
+  "n_candidates_pool": 110,
+  "n_grid_cells": 1118
+}

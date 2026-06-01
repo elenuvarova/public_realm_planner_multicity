@@ -47,6 +47,150 @@
       "coverage_before": 0.7182,
       "coverage_after": 0.7244,
       "n_existing": 20841
+    },
+    {
+      "city": "paris",
+      "asset": "waste_bins",
+      "label": "Paris, France \u00b7 Waste_bins",
+      "coverage_before": 0.9544,
+      "coverage_after": 0.9771,
+      "n_existing": 5767
+    },
+    {
+      "city": "paris",
+      "asset": "drinking_water",
+      "label": "Paris, France \u00b7 Drinking_water",
+      "coverage_before": 0.9853,
+      "coverage_after": 0.9983,
+      "n_existing": 1047
+    },
+    {
+      "city": "paris",
+      "asset": "fitness_stations",
+      "label": "Paris, France \u00b7 Fitness_stations",
+      "coverage_before": 0.4517,
+      "coverage_after": 0.5504,
+      "n_existing": 270
+    },
+    {
+      "city": "paris",
+      "asset": "bike_parking",
+      "label": "Paris, France \u00b7 Bike_parking",
+      "coverage_before": 0.9882,
+      "coverage_after": 0.9983,
+      "n_existing": 10924
+    },
+    {
+      "city": "paris",
+      "asset": "defibrillators",
+      "label": "Paris, France \u00b7 Defibrillators",
+      "coverage_before": 0.9491,
+      "coverage_after": 0.9704,
+      "n_existing": 802
+    },
+    {
+      "city": "paris",
+      "asset": "dog_areas",
+      "label": "Paris, France \u00b7 Dog_areas",
+      "coverage_before": 0.1902,
+      "coverage_after": 0.3041,
+      "n_existing": 26
+    },
+    {
+      "city": "antwerp",
+      "asset": "waste_bins",
+      "label": "Antwerpen, Belgium \u00b7 Waste_bins",
+      "coverage_before": 0.6012,
+      "coverage_after": 0.6289,
+      "n_existing": 1143
+    },
+    {
+      "city": "antwerp",
+      "asset": "drinking_water",
+      "label": "Antwerpen, Belgium \u00b7 Drinking_water",
+      "coverage_before": 0.3384,
+      "coverage_after": 0.4075,
+      "n_existing": 94
+    },
+    {
+      "city": "antwerp",
+      "asset": "fitness_stations",
+      "label": "Antwerpen, Belgium \u00b7 Fitness_stations",
+      "coverage_before": 0.076,
+      "coverage_after": 0.1828,
+      "n_existing": 25
+    },
+    {
+      "city": "antwerp",
+      "asset": "bike_parking",
+      "label": "Antwerpen, Belgium \u00b7 Bike_parking",
+      "coverage_before": 0.6438,
+      "coverage_after": 0.6791,
+      "n_existing": 1604
+    },
+    {
+      "city": "antwerp",
+      "asset": "defibrillators",
+      "label": "Antwerpen, Belgium \u00b7 Defibrillators",
+      "coverage_before": 0.5811,
+      "coverage_after": 0.6219,
+      "n_existing": 250
+    },
+    {
+      "city": "antwerp",
+      "asset": "dog_areas",
+      "label": "Antwerpen, Belgium \u00b7 Dog_areas",
+      "coverage_before": 0.3241,
+      "coverage_after": 0.4049,
+      "n_existing": 74
+    },
+    {
+      "city": "london",
+      "asset": "waste_bins",
+      "label": "London, United Kingdom \u00b7 Waste_bins",
+      "coverage_before": 0.5475,
+      "coverage_after": 0.5522,
+      "n_existing": 9584
+    },
+    {
+      "city": "london",
+      "asset": "drinking_water",
+      "label": "London, United Kingdom \u00b7 Drinking_water",
+      "coverage_before": 0.2078,
+      "coverage_after": 0.2165,
+      "n_existing": 517
+    },
+    {
+      "city": "london",
+      "asset": "fitness_stations",
+      "label": "London, United Kingdom \u00b7 Fitness_stations",
+      "coverage_before": 0.1975,
+      "coverage_after": 0.2126,
+      "n_existing": 566
+    },
+    {
+      "city": "london",
+      "asset": "bike_parking",
+      "label": "London, United Kingdom \u00b7 Bike_parking",
+      "coverage_before": 0.8336,
+      "coverage_after": 0.8378,
+      "n_existing": 27222
+    },
+    {
+      "city": "london",
+      "asset": "defibrillators",
+      "label": "London, United Kingdom \u00b7 Defibrillators",
+      "coverage_before": 0.2365,
+      "coverage_after": 0.2444,
+      "n_existing": 583
+    },
+    {
+      "city": "london",
+      "asset": "dog_areas",
+      "label": "London, United Kingdom \u00b7 Dog_areas",
+      "coverage_before": 0.0497,
+      "coverage_after": 0.0645,
+      "n_existing": 80
     }
   ]
 }

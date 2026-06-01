@@ -43,6 +43,56 @@ ASSETS = {
             "public_transport": ["platform"],
         },
     },
+    "waste_bins": {
+        "osm_tags": {"amenity": "waste_basket"},
+        "demand_pois": {
+            "leisure":          ["park"],
+            "amenity":          ["marketplace", "restaurant", "fast_food"],
+            "public_transport": ["platform"],
+            "railway":          ["station"],
+        },
+    },
+    "drinking_water": {
+        "osm_tags": {"amenity": "drinking_water"},
+        "demand_pois": {
+            "leisure":          ["park", "sports_centre", "pitch"],
+            "amenity":          ["school", "marketplace"],
+            "public_transport": ["platform"],
+        },
+    },
+    "fitness_stations": {
+        "osm_tags": {"leisure": "fitness_station"},
+        "demand_pois": {
+            "leisure":   ["park"],
+            "amenity":   ["hospital", "clinic", "pharmacy"],
+        },
+    },
+    "bike_parking": {
+        "osm_tags": {"amenity": "bicycle_parking"},
+        "demand_pois": {
+            "railway":          ["station"],
+            "public_transport": ["platform"],
+            "amenity":          ["school", "marketplace"],
+            "leisure":          ["park"],
+        },
+    },
+    "defibrillators": {
+        "osm_tags": {"emergency": "defibrillator"},
+        "demand_pois": {
+            "amenity":          ["community_centre", "school", "marketplace"],
+            "leisure":          ["sports_centre"],
+            "railway":          ["station"],
+            "public_transport": ["platform"],
+        },
+    },
+    "dog_areas": {
+        "osm_tags": {"leisure": "dog_park"},
+        "demand_pois": {
+            "leisure":   ["park"],
+            "amenity":   ["veterinary"],
+            "shop":      ["pet"],
+        },
+    },
 }
 
 # H3 resolution for analysis grid

@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.6438,
+  "coverage_after": 0.6791,
+  "coverage_gain": 0.0353,
+  "newly_covered_demand_pct": 0.0353,
+  "coverage_steps": [
+    0.6438,
+    0.6485,
+    0.6531,
+    0.6571,
+    0.6609,
+    0.6645,
+    0.6677,
+    0.6709,
+    0.6738,
+    0.6765,
+    0.6791
+  ],
+  "city": "antwerp",
+  "asset": "bike_parking",
+  "n_existing_assets": 1604,
+  "n_candidates_pool": 1082,
+  "n_grid_cells": 2310
+}

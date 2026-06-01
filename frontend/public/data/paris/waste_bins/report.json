@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.9544,
+  "coverage_after": 0.9771,
+  "coverage_gain": 0.0227,
+  "newly_covered_demand_pct": 0.0227,
+  "coverage_steps": [
+    0.9544,
+    0.9569,
+    0.9594,
+    0.9618,
+    0.9641,
+    0.9664,
+    0.9686,
+    0.9708,
+    0.9729,
+    0.975,
+    0.9771
+  ],
+  "city": "paris",
+  "asset": "waste_bins",
+  "n_existing_assets": 5767,
+  "n_candidates_pool": 215,
+  "n_grid_cells": 1118
+}

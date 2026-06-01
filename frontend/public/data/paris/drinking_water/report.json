@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.9853,
+  "coverage_after": 0.9983,
+  "coverage_gain": 0.013,
+  "newly_covered_demand_pct": 0.013,
+  "coverage_steps": [
+    0.9853,
+    0.9889,
+    0.9906,
+    0.9918,
+    0.9929,
+    0.9939,
+    0.9949,
+    0.9958,
+    0.9967,
+    0.9975,
+    0.9983
+  ],
+  "city": "paris",
+  "asset": "drinking_water",
+  "n_existing_assets": 1047,
+  "n_candidates_pool": 161,
+  "n_grid_cells": 1118
+}
