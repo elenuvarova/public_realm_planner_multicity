@@ -1,0 +1,17 @@
+geopandas>=0.14
+shapely>=2.0
+pyproj>=3.6
+pandas>=2.1
+numpy>=1.26
+requests>=2.31
+osmnx>=1.9
+networkx>=3.2
+scipy>=1.11
+scikit-learn>=1.4
+h3>=4.0
+# rasterstats>=0.19     # for GHSL population raster (Phase 2)
+# tobler>=0.11          # for areal interpolation (Phase 2)
+# pandana>=0.7          # for network accessibility (Phase 2)
+# access>=1.1           # for 2SFCA (Phase 2)
+# pulp>=2.8             # for MCLP (senior path)
+# spopt>=0.6            # for MCLP via PySAL (senior path)

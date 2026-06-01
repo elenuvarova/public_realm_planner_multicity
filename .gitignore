@@ -1,0 +1,21 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+*.sqlite
+*.sqlite-journal
+
+# Python engine
+.venv/
+__pycache__/
+*.pyc
+engine/_scratch/
+
+# osmnx tile/response cache — large, fully reproducible
+cache/
+
+# engine outputs ARE committed (served as static data by the web app)
+# do NOT add frontend/public/data/ here

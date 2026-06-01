@@ -1,0 +1,28 @@
+{
+  "available": [
+    {
+      "city": "antwerp",
+      "asset": "toilets",
+      "label": "Antwerpen, Belgium \u00b7 Toilets",
+      "coverage_before": 0.2603,
+      "coverage_after": 0.3234,
+      "n_existing": 91
+    },
+    {
+      "city": "london",
+      "asset": "toilets",
+      "label": "London, United Kingdom \u00b7 Toilets",
+      "coverage_before": 0.3338,
+      "coverage_after": 0.3423,
+      "n_existing": 1096
+    },
+    {
+      "city": "paris",
+      "asset": "toilets",
+      "label": "Paris, France \u00b7 Toilets",
+      "coverage_before": 0.9397,
+      "coverage_after": 0.9677,
+      "n_existing": 588
+    }
+  ]
+}

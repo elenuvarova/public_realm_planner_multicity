@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.2603,
+  "coverage_after": 0.3234,
+  "coverage_gain": 0.0631,
+  "newly_covered_demand_pct": 0.0631,
+  "coverage_steps": [
+    0.2603,
+    0.2674,
+    0.2742,
+    0.2809,
+    0.2875,
+    0.2937,
+    0.2998,
+    0.3059,
+    0.3118,
+    0.3176,
+    0.3234
+  ],
+  "city": "antwerp",
+  "asset": "toilets",
+  "n_existing_assets": 91,
+  "n_candidates_pool": 935,
+  "n_grid_cells": 2310
+}
