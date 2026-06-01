@@ -96,10 +96,9 @@ export default function App() {
     return () => { cancelled = true; };
   }, [selection.city, selection.asset, reloadKey]);
 
-  // reset layers when city changes (heavy layers default off)
-  useEffect(() => {
-    setLayers({ coverage: true, assets: true, selected: true, pois: false, units: false });
-  }, [selection.city, selection.asset]);
+  // Layer toggles are a user preference — keep them across city/asset switches.
+  // (Heavy layers start off via the initial state above; switching reloads the
+  //  matching units/pois data for whatever layers are currently enabled.)
 
   // ── slider ────────────────────────────────────────────────────────────────
   const maxBudget = coreData?.selected?.features?.length ?? 10;

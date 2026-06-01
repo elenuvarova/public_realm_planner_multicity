@@ -116,7 +116,7 @@ export default function ControlPanel({
         ))}
       </section>
 
-      <section className="panel-section note">
+      <section className="panel-section note panel-section--footer">
         <p>
           Score = gap × equity (TES-adapted).
           <br />
