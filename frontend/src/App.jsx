@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import MapView from "./components/MapView";
 import ControlPanel from "./components/ControlPanel";
 import ReportView from "./components/ReportView";
+import CompareView from "./components/CompareView";
 
 const CITY_CONFIG = {
   paris:   { center: [48.8566,  2.3522], zoom: 12 },
@@ -96,6 +97,9 @@ export default function App() {
   // ── report ────────────────────────────────────────────────────────────────
   const [showReport, setShowReport] = useState(false);
 
+  // ── view mode ─────────────────────────────────────────────────────────────
+  const [mode, setMode] = useState("map");  // "map" | "compare"
+
   // ── render ────────────────────────────────────────────────────────────────
   const mapCfg = CITY_CONFIG[selection.city] ?? CITY_CONFIG.paris;
 
@@ -103,29 +107,53 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <h1>Public Realm Planner</h1>
-        <nav className="city-selector">
-          {available.map((opt) => (
-            <button
-              key={`${opt.city}/${opt.asset}`}
-              className={`city-btn ${
-                selection.city === opt.city && selection.asset === opt.asset
-                  ? "active"
-                  : ""
-              }`}
-              onClick={() => setSelection({ city: opt.city, asset: opt.asset })}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </nav>
+
+        <div className="mode-toggle">
+          <button
+            className={`mode-btn ${mode === "map" ? "active" : ""}`}
+            onClick={() => setMode("map")}
+          >
+            Map
+          </button>
+          <button
+            className={`mode-btn ${mode === "compare" ? "active" : ""}`}
+            onClick={() => setMode("compare")}
+          >
+            Compare cities
+          </button>
+        </div>
+
+        {mode === "map" && (
+          <nav className="city-selector">
+            {available.map((opt) => (
+              <button
+                key={`${opt.city}/${opt.asset}`}
+                className={`city-btn ${
+                  selection.city === opt.city && selection.asset === opt.asset
+                    ? "active"
+                    : ""
+                }`}
+                onClick={() => setSelection({ city: opt.city, asset: opt.asset })}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </nav>
+        )}
       </header>
 
-      {loading && <div className="fullscreen-msg">Loading {selection.city}…</div>}
-      {error && (
+      {mode === "compare" && (
+        <CompareView initialAsset={selection.asset} />
+      )}
+
+      {mode === "map" && loading && (
+        <div className="fullscreen-msg">Loading {selection.city}…</div>
+      )}
+      {mode === "map" && error && (
         <div className="fullscreen-msg error">Error: {error.message}</div>
       )}
 
-      {!loading && !error && coreData && (
+      {mode === "map" && !loading && !error && coreData && (
         <div className="app-body">
           <ControlPanel
             budget={budget}
