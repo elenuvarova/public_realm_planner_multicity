@@ -1,0 +1,60 @@
+name: Refresh engine data
+
+on:
+  workflow_dispatch:
+    inputs:
+      city:
+        description: 'City (paris | antwerp | london) — ignored when run_all is true'
+        default: paris
+        required: false
+      asset:
+        description: 'Asset type (toilets)'
+        default: toilets
+        required: false
+      run_all:
+        description: 'Run all city/asset combinations'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 4 * * 1'   # every Monday 04:00 UTC
+
+permissions:
+  contents: write
+
+jobs:
+  run-engine:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Scheduled runs and manual "run_all" → regenerate every city
+      - name: Run engine — all cities
+        if: github.event_name == 'schedule' || github.event.inputs.run_all == 'true'
+        run: python -m engine.run --all
+
+      # Manual single-city run
+      - name: Run engine — single city
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_all != 'true'
+        run: |
+          python -m engine.run \
+            --city "${{ github.event.inputs.city }}" \
+            --asset "${{ github.event.inputs.asset }}"
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "engine-bot"
+          git config user.email "engine-bot@users.noreply.github.com"
+          git add frontend/public/data/
+          git diff --staged --quiet || (
+            git commit -m "data: refresh $(date -u +%Y-%m-%d) [skip ci]" && git push
+          )
