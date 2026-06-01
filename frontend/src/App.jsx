@@ -146,28 +146,34 @@ export default function App() {
 
         {mode === "map" && (
           <div className="header-selectors">
-            <select
-              className="header-select"
-              value={selection.city}
-              onChange={(e) => setSelection((s) => ({ ...s, city: e.target.value }))}
-            >
-              {availableCities.map((city) => (
-                <option key={city} value={city}>
-                  {CITY_CONFIG[city]?.label ?? city}
-                </option>
-              ))}
-            </select>
-            <select
-              className="header-select"
-              value={selection.asset}
-              onChange={(e) => setSelection((s) => ({ ...s, asset: e.target.value }))}
-            >
-              {availableAssets.map((asset) => (
-                <option key={asset} value={asset}>
-                  {ASSET_LABELS_SHORT[asset] ?? asset}
-                </option>
-              ))}
-            </select>
+            <label className="header-select-label">
+              City
+              <select
+                className="header-select"
+                value={selection.city}
+                onChange={(e) => setSelection((s) => ({ ...s, city: e.target.value }))}
+              >
+                {availableCities.map((city) => (
+                  <option key={city} value={city}>
+                    {CITY_CONFIG[city]?.label ?? city}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="header-select-label">
+              Asset type
+              <select
+                className="header-select"
+                value={selection.asset}
+                onChange={(e) => setSelection((s) => ({ ...s, asset: e.target.value }))}
+              >
+                {availableAssets.map((asset) => (
+                  <option key={asset} value={asset}>
+                    {ASSET_LABELS_SHORT[asset] ?? asset}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         )}
       </header>

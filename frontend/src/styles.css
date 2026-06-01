@@ -43,6 +43,17 @@ html, body, #root {
 }
 
 /* header dropdowns */
+.header-select-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  cursor: pointer;
+}
+
 .header-selectors {
   display: flex;
   align-items: center;
