@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, GeoJSON, Circle, Marker, Popup, Tooltip } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Circle, Marker, Popup, Tooltip, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -80,7 +80,9 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
       zoom={zoom}
       className="leaflet-map"
       scrollWheelZoom
+      zoomControl={false}
     >
+      <ZoomControl position="bottomright" />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
