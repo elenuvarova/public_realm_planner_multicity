@@ -148,16 +148,157 @@ def greedy_max_coverage(
     selected["rank"] = range(1, len(selected) + 1)
 
     report = {
-        "budget":            budget,
-        "service_radius_m":  service_radius_m,
-        "n_selected":        len(selected),
-        "coverage_before":   round(before_pct, 4),
-        "coverage_after":    round(after_pct, 4),
-        "coverage_gain":     round(after_pct - before_pct, 4),
-        "newly_covered_demand_pct": round(after_pct - before_pct, 4),
-        "coverage_steps":    coverage_steps,
+        "solver":                    "greedy",
+        "budget":                    budget,
+        "service_radius_m":          service_radius_m,
+        "n_selected":                len(selected),
+        "coverage_before":           round(before_pct, 4),
+        "coverage_after":            round(after_pct, 4),
+        "coverage_gain":             round(after_pct - before_pct, 4),
+        "newly_covered_demand_pct":  round(after_pct - before_pct, 4),
+        "coverage_steps":            coverage_steps,
     }
     print(f"  coverage: {before_pct:.1%} → {after_pct:.1%}  (+{after_pct-before_pct:.1%})")
+    return selected, report
+
+
+def mclp_max_coverage(
+    candidates: gpd.GeoDataFrame,
+    demand_grid: gpd.GeoDataFrame,
+    assets: gpd.GeoDataFrame,
+    city_crs: int,
+    service_radius_m: float = 500.0,
+    budget: int = 10,
+) -> tuple[gpd.GeoDataFrame, dict]:
+    """
+    Exact MCLP via PuLP/CBC integer linear program.
+
+    Maximises total weighted demand covered subject to a facility budget p.
+    Falls back to greedy_max_coverage on import error or infeasible solve.
+
+    Returns same (selected, report) interface as greedy_max_coverage.
+    """
+    try:
+        import pulp
+    except ImportError:
+        print("  ⚠ pulp not installed — falling back to greedy")
+        return greedy_max_coverage(candidates, demand_grid, assets, city_crs,
+                                   service_radius_m, budget)
+
+    dem_m = demand_grid.to_crs(city_crs)
+    cand_m = candidates.to_crs(city_crs)
+    asset_m = assets.to_crs(city_crs)
+
+    dx = dem_m.geometry.centroid.x.values
+    dy = dem_m.geometry.centroid.y.values
+    dw = (demand_grid["demand_weight"].values
+          if "demand_weight" in demand_grid.columns else np.ones(len(dem_m)))
+
+    cx = cand_m.geometry.x.values
+    cy = cand_m.geometry.y.values
+    n_cands = len(cx)
+    n_demand = len(dx)
+
+    if n_cands == 0:
+        return greedy_max_coverage(candidates, demand_grid, assets, city_crs,
+                                   service_radius_m, budget)
+
+    # coverage sets: which demand cells each candidate covers within radius
+    dem_tree = cKDTree(np.column_stack([dx, dy]))
+    cov_sets = dem_tree.query_ball_point(np.column_stack([cx, cy]), r=service_radius_m)
+
+    # existing coverage by assets already in place
+    covered_before = np.zeros(n_demand, dtype=bool)
+    if len(asset_m) > 0:
+        ax = asset_m.geometry.centroid.x.values
+        ay = asset_m.geometry.centroid.y.values
+        d_existing, _ = cKDTree(np.column_stack([ax, ay])).query(
+            np.column_stack([dx, dy]), k=1)
+        covered_before = d_existing <= service_radius_m
+
+    total_demand = dw.sum() or 1.0
+    before_pct = float(dw[covered_before].sum() / total_demand)
+
+    # only uncovered demand cells are relevant for the ILP
+    uncov_mask = ~covered_before
+    uncov_idx = np.where(uncov_mask)[0]
+
+    # reverse map: for each uncovered demand cell, which candidates can cover it?
+    covering_cands: list[list[int]] = [[] for _ in range(n_demand)]
+    for j, cells in enumerate(cov_sets):
+        for i in cells:
+            if uncov_mask[i]:
+                covering_cands[i].append(j)
+
+    # ILP formulation
+    prob = pulp.LpProblem("MCLP", pulp.LpMaximize)
+    y = [pulp.LpVariable(f"y_{j}", cat="Binary") for j in range(n_cands)]
+    z = [pulp.LpVariable(f"z_{k}", cat="Binary") for k in range(len(uncov_idx))]
+
+    # objective: maximise weighted coverage of currently-uncovered demand
+    prob += pulp.lpSum(float(dw[i]) * z_k for z_k, i in zip(z, uncov_idx))
+
+    # budget: select at most `budget` facilities
+    prob += pulp.lpSum(y) <= budget
+
+    # coverage constraints: demand cell k is covered only if at least one
+    # selected facility within radius covers it
+    for k, i in enumerate(uncov_idx):
+        cj = covering_cands[i]
+        if cj:
+            prob += pulp.lpSum(y[j] for j in cj) >= z[k]
+
+    prob.solve(pulp.PULP_CBC_CMD(msg=False))
+
+    status = pulp.LpStatus[prob.status]
+    if status not in ("Optimal", "Not Solved"):
+        print(f"  ⚠ MCLP solver status: {status} — falling back to greedy")
+        return greedy_max_coverage(candidates, demand_grid, assets, city_crs,
+                                   service_radius_m, budget)
+
+    chosen_indices = [
+        j for j in range(n_cands)
+        if pulp.value(y[j]) is not None and pulp.value(y[j]) > 0.5
+    ]
+
+    # generate coverage_steps for the browser slider:
+    # sort chosen facilities by marginal gain (greedy order within the optimal set)
+    covered = covered_before.copy()
+    ordered_chosen = []
+    coverage_steps = [round(before_pct, 4)]
+    remaining = set(chosen_indices)
+    for _ in range(len(chosen_indices)):
+        best_c, best_gain = -1, -1.0
+        for j in remaining:
+            new_cells = [i for i in cov_sets[j] if not covered[i]]
+            gain = float(dw[new_cells].sum()) if new_cells else 0.0
+            if gain > best_gain:
+                best_gain, best_c = gain, j
+        if best_c < 0:
+            break
+        remaining.remove(best_c)
+        ordered_chosen.append(best_c)
+        for i in cov_sets[best_c]:
+            covered[i] = True
+        coverage_steps.append(round(float(dw[covered].sum() / total_demand), 4))
+
+    after_pct = float(dw[covered].sum() / total_demand)
+    selected = candidates.iloc[ordered_chosen].copy().reset_index(drop=True)
+    selected["rank"] = range(1, len(selected) + 1)
+
+    report = {
+        "solver":                    "mclp",
+        "budget":                    budget,
+        "service_radius_m":          service_radius_m,
+        "n_selected":                len(selected),
+        "coverage_before":           round(before_pct, 4),
+        "coverage_after":            round(after_pct, 4),
+        "coverage_gain":             round(after_pct - before_pct, 4),
+        "newly_covered_demand_pct":  round(after_pct - before_pct, 4),
+        "coverage_steps":            coverage_steps,
+    }
+    print(f"  coverage: {before_pct:.1%} → {after_pct:.1%}  "
+          f"(+{after_pct - before_pct:.1%})  [MCLP exact]")
     return selected, report
 
 

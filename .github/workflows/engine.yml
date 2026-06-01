@@ -15,6 +15,10 @@ on:
         description: 'Run all city/asset combinations'
         type: boolean
         default: false
+      solver:
+        description: 'Optimiser: greedy (fast) or mclp (exact ILP)'
+        default: greedy
+        required: false
   schedule:
     - cron: '0 4 * * 1'   # every Monday 04:00 UTC
 
@@ -49,7 +53,9 @@ jobs:
       # Scheduled runs and manual "run_all" → regenerate every city
       - name: Run engine — all cities
         if: github.event_name == 'schedule' || github.event.inputs.run_all == 'true'
-        run: python -m engine.run --all
+        run: |
+          python -m engine.run --all \
+            --solver "${{ github.event.inputs.solver || 'greedy' }}"
 
       # Manual single-city run
       - name: Run engine — single city
@@ -57,7 +63,8 @@ jobs:
         run: |
           python -m engine.run \
             --city "${{ github.event.inputs.city }}" \
-            --asset "${{ github.event.inputs.asset }}"
+            --asset "${{ github.event.inputs.asset }}" \
+            --solver "${{ github.event.inputs.solver || 'greedy' }}"
 
       - name: Commit refreshed data
         run: |

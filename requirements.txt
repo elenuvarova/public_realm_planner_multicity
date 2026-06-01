@@ -14,5 +14,5 @@ h3>=4.0
 # tobler>=0.11          # for areal interpolation (Phase 2)
 # pandana>=0.7          # for network accessibility (Phase 2)
 # access>=1.1           # for 2SFCA (Phase 2)
-# pulp>=2.8             # for MCLP (senior path)
+pulp>=2.8              # MCLP exact ILP solver (CBC backend)
 # spopt>=0.6            # for MCLP via PySAL (senior path)

@@ -24,7 +24,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from engine.config import ASSETS, CITIES
 from engine.adapters import get_adapter
-from engine.candidates import generate_candidates, greedy_max_coverage
+from engine.candidates import generate_candidates, greedy_max_coverage, mclp_max_coverage
 from engine.deprivation import load_deprivation
 from engine.export import write_outputs
 from engine.grid import make_grid
@@ -37,7 +37,7 @@ from engine.scoring import (
 )
 
 
-def run(city: str, asset: str, budget: int, radius: float) -> None:
+def run(city: str, asset: str, budget: int, radius: float, solver: str = "greedy") -> None:
     t0 = time.time()
     cfg = CITIES[city]
     asset_cfg = ASSETS[asset]
@@ -78,7 +78,8 @@ def run(city: str, asset: str, budget: int, radius: float) -> None:
         priority_pct=0.40,
         min_dist_m=cfg["candidate_min_dist_m"],
     )
-    selected, report = greedy_max_coverage(
+    _optimise = mclp_max_coverage if solver == "mclp" else greedy_max_coverage
+    selected, report = _optimise(
         cands, grid, assets, crs,
         service_radius_m=radius,
         budget=budget,
@@ -106,17 +107,19 @@ def main() -> None:
     parser.add_argument("--budget", default=10, type=int,   help="Number of new assets")
     parser.add_argument("--radius", default=500.0, type=float, help="Service radius in metres")
     parser.add_argument("--all",    action="store_true", help="Run all registered city/asset combinations")
+    parser.add_argument("--solver", default="greedy", choices=["greedy", "mclp"],
+                        help="Optimiser: greedy (fast, ≥63%% optimal) or mclp (exact ILP via CBC)")
     args = parser.parse_args()
 
     if args.all:
         combos = [(c, a) for c in CITIES for a in ASSETS]
         for city, asset in combos:
             try:
-                run(city, asset, args.budget, args.radius)
+                run(city, asset, args.budget, args.radius, solver=args.solver)
             except Exception as e:
                 print(f"\n⚠ {city}/{asset} failed: {e}\n")
     else:
-        run(args.city, args.asset, args.budget, args.radius)
+        run(args.city, args.asset, args.budget, args.radius, solver=args.solver)
 
 
 if __name__ == "__main__":
