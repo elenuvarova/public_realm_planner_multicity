@@ -145,27 +145,30 @@ export default function App() {
         </div>
 
         {mode === "map" && (
-          <nav className="header-selectors">
-            {availableCities.map((city) => (
-              <button
-                key={city}
-                className={`sel-btn sel-btn--city ${selection.city === city ? "active" : ""}`}
-                onClick={() => setSelection((s) => ({ ...s, city }))}
-              >
-                {CITY_CONFIG[city]?.label ?? city}
-              </button>
-            ))}
-            <span className="sel-sep" />
-            {availableAssets.map((asset) => (
-              <button
-                key={asset}
-                className={`sel-btn sel-btn--asset ${selection.asset === asset ? "active" : ""}`}
-                onClick={() => setSelection((s) => ({ ...s, asset }))}
-              >
-                {ASSET_LABELS_SHORT[asset] ?? asset}
-              </button>
-            ))}
-          </nav>
+          <div className="header-selectors">
+            <select
+              className="header-select"
+              value={selection.city}
+              onChange={(e) => setSelection((s) => ({ ...s, city: e.target.value }))}
+            >
+              {availableCities.map((city) => (
+                <option key={city} value={city}>
+                  {CITY_CONFIG[city]?.label ?? city}
+                </option>
+              ))}
+            </select>
+            <select
+              className="header-select"
+              value={selection.asset}
+              onChange={(e) => setSelection((s) => ({ ...s, asset: e.target.value }))}
+            >
+              {availableAssets.map((asset) => (
+                <option key={asset} value={asset}>
+                  {ASSET_LABELS_SHORT[asset] ?? asset}
+                </option>
+              ))}
+            </select>
+          </div>
         )}
       </header>
 
