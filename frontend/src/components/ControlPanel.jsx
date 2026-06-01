@@ -25,6 +25,7 @@ const ASSET_LABELS = {
 };
 
 export default function ControlPanel({
+  open = false,
   budget,
   maxBudget,
   onBudgetChange,
@@ -53,7 +54,7 @@ export default function ControlPanel({
   }
 
   return (
-    <aside className="control-panel">
+    <aside className={`control-panel ${open ? "control-panel--open" : ""}`} aria-label="Scenario controls">
       <section className="panel-section">
         <h3>Scenario</h3>
         <label className="slider-label">
@@ -86,13 +87,16 @@ export default function ControlPanel({
         <h3>Data</h3>
         <ul className="stats-list">
           <li>
-            Existing {assetLabel}: <strong>{meta.n_existing_assets ?? "—"}</strong>
+            <span>Existing {assetLabel}</span>
+            <strong>{(meta.n_existing_assets ?? 0).toLocaleString?.() ?? "—"}</strong>
           </li>
           <li>
-            Analysis cells: <strong>{meta.n_demand_cells ?? "—"}</strong>
+            <span>Analysis cells</span>
+            <strong>{(meta.n_demand_cells ?? 0).toLocaleString?.() ?? "—"}</strong>
           </li>
           <li>
-            Candidate pool: <strong>{meta.n_candidates_pool ?? "—"}</strong>
+            <span>Candidate pool</span>
+            <strong>{(meta.n_candidates_pool ?? 0).toLocaleString?.() ?? "—"}</strong>
           </li>
         </ul>
       </section>

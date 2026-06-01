@@ -70,9 +70,21 @@ export default function Tour({ onDone }) {
 
   useEffect(() => {
     const h = () => setRect(getRect(current.target));
+    const onKey = (e) => {
+      if (e.key === "Escape") onDone();
+      else if (e.key === "ArrowRight" || e.key === "Enter") next();
+      else if (e.key === "ArrowLeft") prev();
+    };
     window.addEventListener("resize", h);
-    return () => window.removeEventListener("resize", h);
-  }, [current.target]);
+    window.addEventListener("scroll", h, true);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("resize", h);
+      window.removeEventListener("scroll", h, true);
+      window.removeEventListener("keydown", onKey);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current.target, step]);
 
   const next = () => (isLast ? onDone() : setStep((s) => s + 1));
   const prev = () => setStep((s) => s - 1);
@@ -106,7 +118,14 @@ export default function Tour({ onDone }) {
       )}
 
       {/* tooltip card */}
-      <div className="tour-card" style={tooltipStyle(rect)} onClick={(e) => e.stopPropagation()}>
+      <div
+        className="tour-card"
+        style={tooltipStyle(rect)}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={current.title}
+      >
         <div className="tour-step-badge">{step + 1} / {STEPS.length}</div>
         <h3 className="tour-title">{current.title}</h3>
         <p className="tour-body">{current.body}</p>

@@ -4,6 +4,7 @@ import ControlPanel from "./components/ControlPanel";
 import ReportView from "./components/ReportView";
 import CompareView from "./components/CompareView";
 import Tour from "./components/Tour";
+import { Loader, ErrorState } from "./components/Status";
 
 const CITY_CONFIG = {
   paris:   { center: [48.8566,  2.3522], zoom: 12, label: "Paris"   },
@@ -56,10 +57,18 @@ export default function App() {
   const [pois, setPois]         = useState(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);  // bump to re-fetch on retry
+  const reload = () => setReloadKey((k) => k + 1);
 
   useEffect(() => {
     const { city, asset } = selection;
     const BASE = `/data/${city}/${asset}`;
+    let cancelled = false;  // guard against out-of-order responses on fast switches
+
+    const ok = (r) => {
+      if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+      return r.json();
+    };
 
     setCoreData(null);
     setUnits(null);
@@ -69,20 +78,23 @@ export default function App() {
 
     // core files (fast: scenario ~1 MB, selected ~3 KB, assets ~20–240 KB)
     Promise.all([
-      fetch(`${BASE}/scenario.json`).then((r) => r.json()),
-      fetch(`${BASE}/selected.geojson`).then((r) => r.json()),
-      fetch(`${BASE}/existing_assets.geojson`).then((r) => r.json()),
+      fetch(`${BASE}/scenario.json`).then(ok),
+      fetch(`${BASE}/selected.geojson`).then(ok),
+      fetch(`${BASE}/existing_assets.geojson`).then(ok),
     ])
       .then(([scenario, selected, assets]) => {
+        if (cancelled) return;
         setCoreData({ scenario, selected, assets });
         setLoading(false);
       })
-      .catch((e) => { setError(e); setLoading(false); });
+      .catch((e) => { if (!cancelled) { setError(e); setLoading(false); } });
 
     // heavy files — loaded in background (units may be 1–10 MB)
-    fetch(`${BASE}/units.geojson`).then((r) => r.json()).then(setUnits).catch(() => {});
-    fetch(`${BASE}/demand_pois.geojson`).then((r) => r.json()).then(setPois).catch(() => {});
-  }, [selection.city, selection.asset]);
+    fetch(`${BASE}/units.geojson`).then(ok).then((d) => !cancelled && setUnits(d)).catch(() => {});
+    fetch(`${BASE}/demand_pois.geojson`).then(ok).then((d) => !cancelled && setPois(d)).catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [selection.city, selection.asset, reloadKey]);
 
   // reset layers when city changes (heavy layers default off)
   useEffect(() => {
@@ -112,13 +124,9 @@ export default function App() {
   // ── view mode ─────────────────────────────────────────────────────────────
   const [mode, setMode] = useState("map");  // "map" | "compare"
 
-  // ── theme ─────────────────────────────────────────────────────────────────
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") ?? "dark");
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme]);
-  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  // ── mobile control-panel drawer ────────────────────────────────────────────
+  const [panelOpen, setPanelOpen] = useState(false);
+  useEffect(() => { setPanelOpen(false); }, [selection.city, selection.asset, mode]);
 
   // ── tour ──────────────────────────────────────────────────────────────────
   const [showTour, setShowTour] = useState(() => !localStorage.getItem("tour_seen"));
@@ -159,10 +167,12 @@ export default function App() {
             </button>
           </div>
           <div className="header-actions">
-            <button className="header-icon-btn" onClick={toggleTheme} title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>
-              {theme === "dark" ? "☀" : "☾"}
-            </button>
-            <button className="header-icon-btn" onClick={() => setShowTour(true)} title="Start tour">
+            <button
+              className="header-icon-btn"
+              onClick={() => setShowTour(true)}
+              title="Start tour"
+              aria-label="Start product tour"
+            >
               ?
             </button>
           </div>
@@ -207,15 +217,21 @@ export default function App() {
       )}
 
       {mode === "map" && loading && (
-        <div className="fullscreen-msg">Loading {selection.city}…</div>
+        <Loader fill message={`Loading ${mapCfg.label}…`} />
       )}
       {mode === "map" && error && (
-        <div className="fullscreen-msg error">Error: {error.message}</div>
+        <ErrorState
+          fill
+          title="Couldn’t load this dataset"
+          message={`${mapCfg.label} · ${ASSET_LABELS_SHORT[selection.asset] ?? selection.asset}. ${error.message}`}
+          onRetry={reload}
+        />
       )}
 
       {mode === "map" && !loading && !error && coreData && (
         <div className="app-body">
           <ControlPanel
+            open={panelOpen}
             budget={budget}
             maxBudget={maxBudget}
             onBudgetChange={setBudget}
@@ -227,6 +243,13 @@ export default function App() {
             onReportOpen={() => setShowReport(true)}
             asset={selection.asset}
           />
+          {panelOpen && (
+            <button
+              className="panel-backdrop"
+              aria-label="Close panel"
+              onClick={() => setPanelOpen(false)}
+            />
+          )}
           <MapView
             key={`${selection.city}-${selection.asset}`}
             center={mapCfg.center}
@@ -236,7 +259,15 @@ export default function App() {
             selectedFeatures={selectedFiltered}
             pois={pois}
             layers={layers}
+            asset={selection.asset}
           />
+          <button
+            className="panel-toggle"
+            onClick={() => setPanelOpen((o) => !o)}
+            aria-expanded={panelOpen}
+          >
+            ☰ Scenario
+          </button>
         </div>
       )}
 

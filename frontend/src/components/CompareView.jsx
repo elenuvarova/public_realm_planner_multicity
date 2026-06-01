@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { SkeletonCard } from "./Status";
 
 const ASSET_LABELS = {
   toilets:          "Toilets",
@@ -100,7 +101,9 @@ export default function CompareView({ initialAsset = "toilets" }) {
         </div>
 
         {loading ? (
-          <div className="compare-loading">Loading data…</div>
+          <div className="compare-cards">
+            {CITIES.map((c) => <SkeletonCard key={c} />)}
+          </div>
         ) : (
           <div className="compare-cards">
             {CITIES.map((city) => {

@@ -4,6 +4,23 @@ import "leaflet/dist/leaflet.css";
 
 const SERVICE_RADIUS_M = 500;
 
+const ASSET_SINGULAR = {
+  toilets:          "Public toilet",
+  benches:          "Bench",
+  waste_bins:       "Waste bin",
+  drinking_water:   "Drinking water point",
+  fitness_stations: "Fitness station",
+  bike_parking:     "Bike parking",
+  defibrillators:   "Defibrillator",
+  dog_areas:        "Dog area",
+};
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])
+  );
+}
+
 function scoreColor(score) {
   if (score < 65) return "#d73027";
   if (score < 72) return "#f46d43";
@@ -49,7 +66,8 @@ function onEachUnit(feature, layer) {
   );
 }
 
-export default function MapView({ center, zoom = 12, units, assets, selectedFeatures, pois, layers }) {
+export default function MapView({ center, zoom = 12, units, assets, selectedFeatures, pois, layers, asset }) {
+  const assetName = ASSET_SINGULAR[asset] ?? "Facility";
   const assetCoords = assets?.features?.map((f) => ({
     lng: f.geometry.coordinates[0],
     lat: f.geometry.coordinates[1],
@@ -130,10 +148,13 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
             })
           }
           onEachFeature={(feature, layer) => {
-            const p = feature.properties;
-            layer.bindPopup(
-              `<b>${p.name || "Public toilet"}</b><br/>Accessible: ${p.accessible || "—"}`
-            );
+            const p = feature.properties ?? {};
+            const title = escapeHtml(p.name || assetName);
+            const access =
+              p.accessible != null && p.accessible !== ""
+                ? `<br/>Accessible: ${escapeHtml(p.accessible)}`
+                : "";
+            layer.bindPopup(`<b>${title}</b>${access}`);
           }}
         />
       )}

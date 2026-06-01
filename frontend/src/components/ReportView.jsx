@@ -1,12 +1,26 @@
+import { useEffect } from "react";
+
 const CITY_LABELS = {
   paris:   "Paris, France",
   antwerp: "Antwerpen, Belgium",
   london:  "London, United Kingdom",
 };
 
+const CITY_DEPRIVATION = {
+  paris:   "INSEE FILOSOFI 2019 (IRIS zones)",
+  antwerp: "Statbel BIMD 2011 (statistical sectors)",
+  london:  "ONS IMD 2019 (LSOA zones)",
+};
+
 const ASSET_LABELS = {
-  toilets: "Public Toilets",
-  benches: "Public Benches",
+  toilets:          "Public Toilets",
+  benches:          "Public Benches",
+  waste_bins:       "Waste Bins",
+  drinking_water:   "Drinking Water Points",
+  fitness_stations: "Fitness Stations",
+  bike_parking:     "Bike Parking",
+  defibrillators:   "Defibrillators",
+  dog_areas:        "Dog Areas",
 };
 
 const SOURCE_MAP = {
@@ -34,9 +48,17 @@ export default function ReportView({
   const src      = assetSource(assets);
   const cityLbl  = CITY_LABELS[city]  ?? city;
   const assetLbl = ASSET_LABELS[asset] ?? asset;
+  const deprLbl  = CITY_DEPRIVATION[city] ?? "census deprivation index";
   const today    = new Date().toLocaleDateString("en-GB", {
     day: "numeric", month: "long", year: "numeric",
   });
+
+  // close on Escape
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   return (
     <div className="report-overlay">
@@ -140,20 +162,24 @@ export default function ReportView({
             </pre>
             <ul className="r-list">
               <li>
-                <strong>GapScore</strong> — min-max normalised distance
-                to nearest existing {asset} (0 = fully covered,
-                1 = farthest point in city).
+                <strong>GapScore</strong> — walking-network distance
+                (OSMnx + multi-source Dijkstra) from each cell to the
+                nearest existing {assetLbl.toLowerCase()}, capped at 2× the
+                500 m radius and min-max normalised within the city
+                (0 = fully covered, 1 = farthest reachable point).
               </li>
               <li>
-                <strong>EquityIndex</strong> — 0.1 + 0.9 × normalised
-                demand-POI density within 800 m (parks, schools,
-                transit stops, markets).
+                <strong>EquityIndex</strong> — 0.1 + 0.9 × mean of two
+                min-max-normalised indicators: census deprivation
+                ({deprLbl}) and demand-POI density within 800 m
+                (parks, schools, transit stops, markets).
               </li>
             </ul>
             <p>
               Candidates: centroids of bottom 40% cells by Score,
               filtered ≥300 m from existing assets. Final selection:
-              greedy maximisation of population-weighted demand coverage.
+              greedy maximisation of demand-weighted coverage
+              (≥63% of optimal, Nemhauser et al. 1978).
             </p>
           </section>
 
@@ -186,7 +212,14 @@ export default function ReportView({
                   </td>
                 </tr>
                 <tr>
-                  <td>City boundary</td>
+                  <td>Deprivation</td>
+                  <td>{deprLbl}</td>
+                  <td>
+                    <span className="conf conf-high">High</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Walk network</td>
                   <td>OSMnx / OpenStreetMap</td>
                   <td>
                     <span className="conf conf-high">High</span>
@@ -198,9 +231,10 @@ export default function ReportView({
             <h2 style={{ marginTop: "1.2rem" }}>Limitations</h2>
             <ul className="r-list">
               <li>
-                Distances are <strong>straight-line</strong>, not
-                walking-network. Actual coverage is likely lower near
-                barriers or sparse path networks.
+                Walking distance snaps cells and assets to the nearest
+                OSM graph node, so very short trips carry a{" "}
+                <strong>±50–100 m approximation</strong>; unmapped paths
+                or private cut-throughs are not counted.
               </li>
               <li>
                 OSM may{" "}
@@ -208,13 +242,14 @@ export default function ReportView({
                 overstating gaps where volunteer coverage is thin.
               </li>
               <li>
-                Equity proxied by demand POI density only; census
-                deprivation indices not yet integrated (Phase 2).
+                Deprivation vintages differ by city ({deprLbl}); the{" "}
+                <strong>Antwerp BIMD (2011)</strong> in particular predates
+                the other indices and may understate recent change.
               </li>
               <li>
                 Scores are <strong>city-relative</strong> (min-max within
                 city). Cross-city comparison requires unified
-                normalisation.
+                normalisation — see the Compare view’s density metrics.
               </li>
             </ul>
           </section>
