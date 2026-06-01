@@ -4,8 +4,10 @@ TES-style multiplicative scoring.
 Score = 100 × (1 − GapScore × EquityIndex)
 EquityIndex = 0.1 + 0.9 × mean(min-max normalised equity indicators)
 
-Phase 0: GapScore = capped distance to nearest existing asset.
-Phase 2: replace with network-distance coverage + proper census equity indicators.
+GapScore:
+  Phase 0: Euclidean distance to nearest existing asset (compute_gap_score).
+  Phase 2: Walking-network distance via OSMnx + multi-source Dijkstra
+           (compute_network_gap_score — default when boundary is available).
 
 Sources:
   TES methodology (American Forests, Toronto 2024):
@@ -17,10 +19,15 @@ Sources:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import geopandas as gpd
 import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
+
+_REPO_ROOT = Path(__file__).parent.parent
+_GRAPH_CACHE = _REPO_ROOT / "cache" / "graphs"
 
 
 def _minmax(s: pd.Series) -> pd.Series:
@@ -70,6 +77,86 @@ def compute_gap_score(
     gapmax = gap_raw.max()
     grid["GapScore"] = (gap_raw / gapmax).round(4) if gapmax > 0 else 0.0
     return grid
+
+
+def compute_network_gap_score(
+    grid: gpd.GeoDataFrame,
+    assets: gpd.GeoDataFrame,
+    boundary: gpd.GeoDataFrame,
+    city_key: str,
+    city_crs: int,
+    walk_radius_m: float = 500.0,
+) -> gpd.GeoDataFrame:
+    """
+    Walking-network gap score using OSMnx + multi-source Dijkstra.
+
+    Builds (or loads from cache/graphs/) a projected walk graph, then runs
+    multi-source Dijkstra from all existing asset nodes to find the nearest
+    walking distance to every H3 cell centroid.
+
+    Falls back to Euclidean compute_gap_score on any error.
+    """
+    import networkx as nx
+    import osmnx as ox
+
+    _GRAPH_CACHE.mkdir(parents=True, exist_ok=True)
+    cache_path = _GRAPH_CACHE / f"{city_key}_walk_{city_crs}.graphml"
+
+    try:
+        if cache_path.exists():
+            print(f"  loading cached walk graph ({cache_path.name})...")
+            G = ox.load_graphml(str(cache_path))
+        else:
+            print("  building walk graph from OSM (will be cached)...")
+            poly = boundary.union_all()
+            G = ox.graph_from_polygon(poly, network_type="walk", retain_all=False)
+            G = ox.project_graph(G, to_crs=city_crs)
+            ox.save_graphml(G, filepath=str(cache_path))
+            print(f"  walk graph saved to {cache_path.name}")
+
+        if len(assets) == 0:
+            raise ValueError("no existing assets — cannot compute network gap")
+
+        # snap assets to nearest graph nodes
+        assets_proj = assets.to_crs(city_crs)
+        asset_nodes = ox.nearest_nodes(
+            G,
+            X=assets_proj.geometry.centroid.x.values,
+            Y=assets_proj.geometry.centroid.y.values,
+        )
+
+        # multi-source Dijkstra: one pass gives distance from *nearest* asset
+        # to every reachable node within the cutoff
+        cutoff = walk_radius_m * 3  # gradient beyond threshold; 1500 m default
+        lengths = dict(
+            nx.multi_source_dijkstra_path_length(
+                G, sources=set(asset_nodes), cutoff=cutoff, weight="length"
+            )
+        )
+
+        # snap H3 centroids to graph nodes and look up distances
+        grid_proj = grid.to_crs(city_crs)
+        centroid_nodes = ox.nearest_nodes(
+            G,
+            X=grid_proj.geometry.centroid.x.values,
+            Y=grid_proj.geometry.centroid.y.values,
+        )
+        dist_m = np.array([lengths.get(n, cutoff) for n in centroid_nodes], dtype=float)
+
+        grid = grid.copy()
+        grid["dist_to_nearest_m"] = dist_m.round(1)
+        gap_raw = np.clip(dist_m, 0, walk_radius_m * 2)
+        gap_max = gap_raw.max()
+        grid["GapScore"] = (gap_raw / gap_max).round(4) if gap_max > 0 else 0.0
+
+        covered_pct = (dist_m <= walk_radius_m).mean() * 100
+        print(f"  network gap: median {np.median(dist_m):.0f} m  "
+              f"covered ≤{walk_radius_m:.0f} m: {covered_pct:.1f}%")
+        return grid
+
+    except Exception as exc:
+        print(f"  ⚠ network gap failed ({exc!r}), falling back to Euclidean")
+        return compute_gap_score(grid, assets, city_crs, walk_radius_m)
 
 
 def compute_demand_score(

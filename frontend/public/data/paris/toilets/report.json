@@ -3,9 +3,9 @@
   "service_radius_m": 500.0,
   "n_selected": 10,
   "coverage_before": 0.9397,
-  "coverage_after": 0.9677,
-  "coverage_gain": 0.028,
-  "newly_covered_demand_pct": 0.028,
+  "coverage_after": 0.9672,
+  "coverage_gain": 0.0274,
+  "newly_covered_demand_pct": 0.0274,
   "coverage_steps": [
     0.9397,
     0.9453,
@@ -15,13 +15,13 @@
     0.9576,
     0.9601,
     0.9623,
-    0.9642,
-    0.966,
-    0.9677
+    0.964,
+    0.9656,
+    0.9672
   ],
   "city": "paris",
   "asset": "toilets",
   "n_existing_assets": 588,
-  "n_candidates_pool": 230,
+  "n_candidates_pool": 207,
   "n_grid_cells": 1118
 }

@@ -37,6 +37,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # Cache OSMnx HTTP responses + walk graph files between runs
+      - name: Restore OSM + graph cache
+        uses: actions/cache@v4
+        with:
+          path: cache/
+          key: osm-cache-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            osm-cache-${{ runner.os }}-
+
       # Scheduled runs and manual "run_all" → regenerate every city
       - name: Run engine — all cities
         if: github.event_name == 'schedule' || github.event.inputs.run_all == 'true'

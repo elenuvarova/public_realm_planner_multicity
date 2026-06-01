@@ -31,6 +31,7 @@ from engine.scoring import (
     compute_demand_score,
     compute_equity_index,
     compute_gap_score,
+    compute_network_gap_score,
     compute_score,
 )
 
@@ -62,7 +63,7 @@ def run(city: str, asset: str, budget: int, radius: float) -> None:
     print(f"  loaded {len(pois)} demand POIs")
 
     print("[5/7] scoring")
-    grid = compute_gap_score(grid, assets, crs, walk_radius_m=radius)
+    grid = compute_network_gap_score(grid, assets, boundary, city, crs, walk_radius_m=radius)
     grid = compute_demand_score(grid, pois, crs, count_radius_m=radius * 1.6)
     grid = compute_equity_index(grid, equity_cols=["demand_weight"])
     grid = compute_score(grid)

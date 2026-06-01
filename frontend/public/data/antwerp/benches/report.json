@@ -22,6 +22,6 @@
   "city": "antwerp",
   "asset": "benches",
   "n_existing_assets": 3050,
-  "n_candidates_pool": 1060,
+  "n_candidates_pool": 790,
   "n_grid_cells": 2310
 }
