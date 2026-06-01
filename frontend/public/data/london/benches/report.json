@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.7182,
+  "coverage_after": 0.7244,
+  "coverage_gain": 0.0062,
+  "newly_covered_demand_pct": 0.0062,
+  "coverage_steps": [
+    0.7182,
+    0.7189,
+    0.7195,
+    0.7202,
+    0.7208,
+    0.7214,
+    0.722,
+    0.7226,
+    0.7232,
+    0.7238,
+    0.7244
+  ],
+  "city": "london",
+  "asset": "benches",
+  "n_existing_assets": 20841,
+  "n_candidates_pool": 6445,
+  "n_grid_cells": 16889
+}

@@ -137,6 +137,7 @@ export default function App() {
             layers={layers}
             onLayersChange={setLayers}
             onReportOpen={() => setShowReport(true)}
+            asset={selection.asset}
           />
           <MapView
             key={`${selection.city}-${selection.asset}`}

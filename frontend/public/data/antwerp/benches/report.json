@@ -1,0 +1,27 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 10,
+  "coverage_before": 0.7139,
+  "coverage_after": 0.7445,
+  "coverage_gain": 0.0306,
+  "newly_covered_demand_pct": 0.0306,
+  "coverage_steps": [
+    0.7139,
+    0.7186,
+    0.7227,
+    0.7264,
+    0.7293,
+    0.732,
+    0.7346,
+    0.7371,
+    0.7396,
+    0.742,
+    0.7445
+  ],
+  "city": "antwerp",
+  "asset": "benches",
+  "n_existing_assets": 3050,
+  "n_candidates_pool": 1060,
+  "n_grid_cells": 2310
+}

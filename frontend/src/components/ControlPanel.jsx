@@ -13,13 +13,10 @@ function CoverageBar({ label, value, color }) {
   );
 }
 
-const LAYER_DEFS = [
-  { key: "coverage", label: "Coverage zones (500 m)", color: "#3b82f6" },
-  { key: "assets",   label: "Existing toilets",       color: "#3b82f6" },
-  { key: "selected", label: "Recommendations",         color: "#f97316" },
-  { key: "pois",     label: "Demand POIs",             color: "#8b5cf6" },
-  { key: "units",    label: "Score grid (H3)",         color: "#fdae61" },
-];
+const ASSET_LABELS = {
+  toilets: "toilets",
+  benches: "benches",
+};
 
 export default function ControlPanel({
   budget,
@@ -31,9 +28,19 @@ export default function ControlPanel({
   layers,
   onLayersChange,
   onReportOpen,
+  asset,
 }) {
   const gain = coverageAfter - coverageBefore;
   const meta = scenario?.meta ?? {};
+  const assetLabel = ASSET_LABELS[asset] ?? asset ?? "assets";
+
+  const LAYER_DEFS = [
+    { key: "coverage", label: "Coverage zones (500 m)",            color: "#3b82f6" },
+    { key: "assets",   label: `Existing ${assetLabel}`,            color: "#3b82f6" },
+    { key: "selected", label: "Recommendations",                    color: "#f97316" },
+    { key: "pois",     label: "Demand POIs",                       color: "#8b5cf6" },
+    { key: "units",    label: "Score grid (H3)",                   color: "#fdae61" },
+  ];
 
   function toggle(key) {
     onLayersChange((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -44,7 +51,7 @@ export default function ControlPanel({
       <section className="panel-section">
         <h3>Scenario</h3>
         <label className="slider-label">
-          New toilets: <strong>{budget}</strong>
+          New {assetLabel}: <strong>{budget}</strong>
         </label>
         <input
           type="range"
@@ -73,7 +80,7 @@ export default function ControlPanel({
         <h3>Data</h3>
         <ul className="stats-list">
           <li>
-            Existing toilets: <strong>{meta.n_existing_assets ?? "—"}</strong>
+            Existing {assetLabel}: <strong>{meta.n_existing_assets ?? "—"}</strong>
           </li>
           <li>
             Analysis cells: <strong>{meta.n_demand_cells ?? "—"}</strong>
@@ -101,9 +108,9 @@ export default function ControlPanel({
 
       <section className="panel-section note">
         <p>
-          Score = TES-style gap × equity.
+          Score = gap × equity (TES-adapted).
           <br />
-          Greedy selection guarantees ≥63% of optimal coverage.
+          Greedy selection: ≥63% of optimal coverage.
         </p>
         <p className="source">
           Source: opendata · OpenStreetMap

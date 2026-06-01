@@ -1,0 +1,23 @@
+{
+  "budget": 10,
+  "service_radius_m": 500.0,
+  "n_selected": 6,
+  "coverage_before": 0.997,
+  "coverage_after": 1.0,
+  "coverage_gain": 0.003,
+  "newly_covered_demand_pct": 0.003,
+  "coverage_steps": [
+    0.997,
+    0.9981,
+    0.9991,
+    0.9994,
+    0.9996,
+    0.9998,
+    1.0
+  ],
+  "city": "paris",
+  "asset": "benches",
+  "n_existing_assets": 14688,
+  "n_candidates_pool": 49,
+  "n_grid_cells": 1118
+}
