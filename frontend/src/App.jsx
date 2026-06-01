@@ -3,6 +3,7 @@ import MapView from "./components/MapView";
 import ControlPanel from "./components/ControlPanel";
 import ReportView from "./components/ReportView";
 import CompareView from "./components/CompareView";
+import Tour from "./components/Tour";
 
 const CITY_CONFIG = {
   paris:   { center: [48.8566,  2.3522], zoom: 12, label: "Paris"   },
@@ -111,6 +112,21 @@ export default function App() {
   // ── view mode ─────────────────────────────────────────────────────────────
   const [mode, setMode] = useState("map");  // "map" | "compare"
 
+  // ── theme ─────────────────────────────────────────────────────────────────
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") ?? "dark");
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+
+  // ── tour ──────────────────────────────────────────────────────────────────
+  const [showTour, setShowTour] = useState(() => !localStorage.getItem("tour_seen"));
+  const handleTourDone = () => {
+    localStorage.setItem("tour_seen", "1");
+    setShowTour(false);
+  };
+
   // ── render ────────────────────────────────────────────────────────────────
   const mapCfg = CITY_CONFIG[selection.city] ?? CITY_CONFIG.paris;
 
@@ -140,6 +156,14 @@ export default function App() {
               onClick={() => setMode("compare")}
             >
               Compare
+            </button>
+          </div>
+          <div className="header-actions">
+            <button className="header-icon-btn" onClick={toggleTheme} title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>
+              {theme === "dark" ? "☀" : "☾"}
+            </button>
+            <button className="header-icon-btn" onClick={() => setShowTour(true)} title="Start tour">
+              ?
             </button>
           </div>
         </div>
@@ -215,6 +239,8 @@ export default function App() {
           />
         </div>
       )}
+
+      {showTour && <Tour onDone={handleTourDone} />}
 
       {showReport && coreData && (
         <ReportView
