@@ -21,7 +21,7 @@
       "asset": "toilets",
       "label": "Paris, France \u00b7 Toilets",
       "coverage_before": 0.9397,
-      "coverage_after": 0.9672,
+      "coverage_after": 0.9677,
       "n_existing": 588
     },
     {
@@ -37,7 +37,7 @@
       "asset": "benches",
       "label": "Antwerpen, Belgium \u00b7 Benches",
       "coverage_before": 0.7139,
-      "coverage_after": 0.7445,
+      "coverage_after": 0.7439,
       "n_existing": 3050
     },
     {

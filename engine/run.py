@@ -25,6 +25,7 @@ sys.path.insert(0, str(REPO_ROOT))
 from engine.config import ASSETS, CITIES
 from engine.adapters import get_adapter
 from engine.candidates import generate_candidates, greedy_max_coverage
+from engine.deprivation import load_deprivation
 from engine.export import write_outputs
 from engine.grid import make_grid
 from engine.scoring import (
@@ -65,7 +66,8 @@ def run(city: str, asset: str, budget: int, radius: float) -> None:
     print("[5/7] scoring")
     grid = compute_network_gap_score(grid, assets, boundary, city, crs, walk_radius_m=radius)
     grid = compute_demand_score(grid, pois, crs, count_radius_m=radius * 1.6)
-    grid = compute_equity_index(grid, equity_cols=["demand_weight"])
+    grid = load_deprivation(city, grid, boundary, crs)
+    grid = compute_equity_index(grid, equity_cols=["deprivation_score", "demand_weight"])
     grid = compute_score(grid)
     print(f"  score range: {grid['Score'].min():.1f} – {grid['Score'].max():.1f}")
     print(f"  median gap:  {grid['dist_to_nearest_m'].median():.0f} m")

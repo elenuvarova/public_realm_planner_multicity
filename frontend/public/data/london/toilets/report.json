@@ -22,6 +22,6 @@
   "city": "london",
   "asset": "toilets",
   "n_existing_assets": 1096,
-  "n_candidates_pool": 6528,
+  "n_candidates_pool": 6608,
   "n_grid_cells": 16889
 }
