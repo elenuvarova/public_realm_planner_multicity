@@ -11,6 +11,16 @@ import geopandas as gpd
 import numpy as np
 from scipy.spatial import cKDTree
 
+# Walking trips are longer than the straight line between two points. We use a
+# circuity factor to reconcile the two distance models in this file:
+#   - GapScore (scoring.py) is a WALKING-NETWORK distance.
+#   - Candidate coverage sets here are computed with a fast Euclidean kd-tree.
+# Shrinking the Euclidean radius by this factor makes "reachable in a straight
+# line" approximate "reachable on foot within service_radius_m", so the headline
+# coverage numbers stay consistent with the gap map. ~1.35 is a common urban
+# street-network circuity (Boeing 2019, "Street Network Models and Measures").
+CIRCUITY_FACTOR = 1.35
+
 
 def generate_candidates(
     grid: gpd.GeoDataFrame,
@@ -80,6 +90,26 @@ def generate_candidates(
     return cands
 
 
+def _existing_covered(demand_grid, dem_m, asset_m, dx, dy, service_radius_m):
+    """
+    Boolean mask of demand cells already served by existing assets.
+
+    Prefers the walking-network distance precomputed on the grid
+    (`dist_to_nearest_m`, the same quantity GapScore is derived from) so the
+    coverage baseline matches the gap map. Falls back to a circuity-adjusted
+    Euclidean nearest-asset query when that column is unavailable.
+    """
+    if "dist_to_nearest_m" in demand_grid.columns:
+        return demand_grid["dist_to_nearest_m"].values <= service_radius_m
+    covered = np.zeros(len(dem_m), dtype=bool)
+    if len(asset_m) > 0:
+        ax = asset_m.geometry.centroid.x.values
+        ay = asset_m.geometry.centroid.y.values
+        d_existing, _ = cKDTree(np.column_stack([ax, ay])).query(np.column_stack([dx, dy]), k=1)
+        covered = d_existing <= service_radius_m / CIRCUITY_FACTOR
+    return covered
+
+
 def greedy_max_coverage(
     candidates: gpd.GeoDataFrame,
     demand_grid: gpd.GeoDataFrame,
@@ -110,17 +140,17 @@ def greedy_max_coverage(
     cx = cand_m.geometry.x.values
     cy = cand_m.geometry.y.values
 
-    # coverage sets: which demand cells each candidate covers within radius
+    # coverage sets: which demand cells each candidate covers within reach.
+    # Use a circuity-shrunk Euclidean radius so straight-line reach approximates
+    # the walking-network reach that GapScore is built on (see CIRCUITY_FACTOR).
+    eff_radius = service_radius_m / CIRCUITY_FACTOR
     dem_tree = cKDTree(np.column_stack([dx, dy]))
-    cov_sets = dem_tree.query_ball_point(np.column_stack([cx, cy]), r=service_radius_m)
+    cov_sets = dem_tree.query_ball_point(np.column_stack([cx, cy]), r=eff_radius)
 
-    # before: how much is already covered by existing assets
-    covered = np.zeros(len(dem_m), dtype=bool)
-    if len(asset_m) > 0:
-        ax = asset_m.geometry.centroid.x.values
-        ay = asset_m.geometry.centroid.y.values
-        d_existing, _ = cKDTree(np.column_stack([ax, ay])).query(np.column_stack([dx, dy]), k=1)
-        covered = d_existing <= service_radius_m
+    # before: how much is already covered by existing assets. Prefer the
+    # walking-network distance already on the grid (consistent with GapScore);
+    # fall back to a circuity-adjusted Euclidean estimate only if it's absent.
+    covered = _existing_covered(demand_grid, dem_m, asset_m, dx, dy, service_radius_m)
     total_demand = dw.sum() or 1.0
     before_pct = float(dw[covered].sum() / total_demand)
 
@@ -151,6 +181,8 @@ def greedy_max_coverage(
         "solver":                    "greedy",
         "budget":                    budget,
         "service_radius_m":          service_radius_m,
+        "circuity_factor":           CIRCUITY_FACTOR,
+        "coverage_basis":            "network baseline + circuity-adjusted candidate reach",
         "n_selected":                len(selected),
         "coverage_before":           round(before_pct, 4),
         "coverage_after":            round(after_pct, 4),
@@ -203,18 +235,13 @@ def mclp_max_coverage(
         return greedy_max_coverage(candidates, demand_grid, assets, city_crs,
                                    service_radius_m, budget)
 
-    # coverage sets: which demand cells each candidate covers within radius
+    # coverage sets: circuity-shrunk Euclidean reach (≈ walking-network reach)
+    eff_radius = service_radius_m / CIRCUITY_FACTOR
     dem_tree = cKDTree(np.column_stack([dx, dy]))
-    cov_sets = dem_tree.query_ball_point(np.column_stack([cx, cy]), r=service_radius_m)
+    cov_sets = dem_tree.query_ball_point(np.column_stack([cx, cy]), r=eff_radius)
 
-    # existing coverage by assets already in place
-    covered_before = np.zeros(n_demand, dtype=bool)
-    if len(asset_m) > 0:
-        ax = asset_m.geometry.centroid.x.values
-        ay = asset_m.geometry.centroid.y.values
-        d_existing, _ = cKDTree(np.column_stack([ax, ay])).query(
-            np.column_stack([dx, dy]), k=1)
-        covered_before = d_existing <= service_radius_m
+    # existing coverage by assets already in place (network baseline when available)
+    covered_before = _existing_covered(demand_grid, dem_m, asset_m, dx, dy, service_radius_m)
 
     total_demand = dw.sum() or 1.0
     before_pct = float(dw[covered_before].sum() / total_demand)
@@ -290,6 +317,8 @@ def mclp_max_coverage(
         "solver":                    "mclp",
         "budget":                    budget,
         "service_radius_m":          service_radius_m,
+        "circuity_factor":           CIRCUITY_FACTOR,
+        "coverage_basis":            "network baseline + circuity-adjusted candidate reach",
         "n_selected":                len(selected),
         "coverage_before":           round(before_pct, 4),
         "coverage_after":            round(after_pct, 4),

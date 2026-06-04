@@ -311,6 +311,20 @@
         instead of solving an intractable exact optimisation.
       </p>
 
+      <h2>How the coverage percentage is measured</h2>
+      <p>
+        The headline <em>coverage</em> figure is the demand-weighted share of analysis units that sit
+        within the 500&nbsp;m service distance of an asset. To keep that number consistent with the
+        walking-network gap map, the <strong>existing-coverage baseline uses the same network walking
+        distance</strong> as GapScore — not a straight line. New candidate locations are matched to
+        nearby demand with a fast straight-line search whose radius is shrunk by a
+        <strong>circuity factor of ≈ 1.35</strong> (a typical urban street-network detour ratio, after
+        Boeing 2019), so "reachable in a straight line" approximates "reachable on foot." Without that
+        correction a straight-line radius would overstate how much each new site really covers. The
+        in-app <em>what-if planner</em> uses the same 1.35 factor for its live straight-line estimate,
+        which is clearly labelled as an approximation of the rigorous network figure.
+      </p>
+
       <h2>Deprivation data, per city</h2>
       <p>
         Deprivation is the one input that has to come from each country's own statistics, so the
