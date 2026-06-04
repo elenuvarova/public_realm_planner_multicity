@@ -1,9 +1,28 @@
+# Dependencies & build output (re-installed/rebuilt inside the image)
 **/node_modules/
 dist/
 build/
+
+# Secrets — never copy into the image.
+# Docker does NOT match a bare `.env` against nested paths, so list both forms.
+**/.env
 .env
 .env.local
 .env.*
+
+# Python engine artefacts — the Dockerfile only COPYs frontend/ and backend/,
+# so none of this is needed in the web image (and cache/ alone is ~1.3 GB).
+.venv/
+**/__pycache__/
+*.pyc
+cache/
+*.sqlite
+*.sqlite-journal
+
+# Docs & VCS — not part of the runtime
+docs/
 .git/
 *.log
 .DS_Store
+
+# NOTE: do NOT ignore frontend/public/data/ — committed GeoJSON the app ships.

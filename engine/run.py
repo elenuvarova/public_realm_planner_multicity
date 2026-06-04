@@ -66,7 +66,9 @@ def run(city: str, asset: str, budget: int, radius: float, solver: str = "greedy
     print("[5/7] scoring")
     grid = compute_network_gap_score(grid, assets, boundary, city, crs, walk_radius_m=radius)
     grid = compute_demand_score(grid, pois, crs, count_radius_m=radius * 1.6)
-    grid = load_deprivation(city, grid, boundary, crs)
+    grid, deprivation_status = load_deprivation(city, grid, boundary, crs)
+    print(f"  deprivation source: {deprivation_status['deprivation_source']} "
+          f"({deprivation_status['zones_joined']} zones joined)")
     grid = compute_equity_index(grid, equity_cols=["deprivation_score", "demand_weight"])
     grid = compute_score(grid)
     print(f"  score range: {grid['Score'].min():.1f} – {grid['Score'].max():.1f}")
@@ -84,6 +86,13 @@ def run(city: str, asset: str, budget: int, radius: float, solver: str = "greedy
         service_radius_m=radius,
         budget=budget,
     )
+
+    # provenance: record whether the equity score used real census data or fell
+    # back to a neutral 0.5, so the exported JSON makes a degraded run visible.
+    report["deprivation_source"] = deprivation_status["deprivation_source"]
+    report["deprivation_zones_joined"] = deprivation_status["zones_joined"]
+    if deprivation_status["reason"]:
+        report["deprivation_fallback_reason"] = deprivation_status["reason"]
 
     print("[7/7] export")
     out_dir = write_outputs(
@@ -113,11 +122,30 @@ def main() -> None:
 
     if args.all:
         combos = [(c, a) for c in CITIES for a in ASSETS]
+        failures: list[tuple[str, str, str]] = []
         for city, asset in combos:
+            # Keep going on a per-combo failure so one bad city/asset doesn't abort
+            # the rest, but RECORD it: a partial dataset must not ship under a green job.
             try:
                 run(city, asset, args.budget, args.radius, solver=args.solver)
             except Exception as e:
                 print(f"\n⚠ {city}/{asset} failed: {e}\n")
+                failures.append((city, asset, repr(e)))
+
+        total = len(combos)
+        ok = total - len(failures)
+        print(f"\n{'='*52}")
+        print(f"  Engine --all summary: {ok}/{total} combinations succeeded")
+        if failures:
+            print(f"  {len(failures)} FAILED:")
+            for city, asset, err in failures:
+                print(f"    ✗ {city}/{asset}: {err}")
+            print(f"{'='*52}\n")
+            # Exit non-zero so the cron's `git add/commit/push` step (which only
+            # short-circuits on a clean diff) does NOT push a degraded/partial
+            # dataset under a passing job.
+            sys.exit(1)
+        print(f"{'='*52}\n")
     else:
         run(args.city, args.asset, args.budget, args.radius, solver=args.solver)
 

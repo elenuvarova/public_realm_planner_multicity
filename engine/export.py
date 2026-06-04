@@ -106,6 +106,9 @@ def _write_scenario_json(
             "n_demand_cells":    n_demand_cells,
             "n_existing_assets": report.get("n_existing_assets", 0),
             "n_candidates_pool": report.get("n_candidates_pool", 0),
+            # equity-score provenance: 'real' | 'neutral_fallback' (CompareView follow-up)
+            "deprivation_source":       report.get("deprivation_source", "real"),
+            "deprivation_zones_joined": report.get("deprivation_zones_joined", 0),
         },
         "coverage_steps": report.get("coverage_steps", []),
     }

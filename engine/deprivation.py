@@ -6,19 +6,26 @@ Paris   → INSEE FILOSOFI 2019 — taux de pauvreté (%) at IRIS level
 Antwerp → Statbel BIMD 2011   — composite deprivation at statistical sector level
 London  → ONS IMD 2019        — Index of Multiple Deprivation at LSOA 2011 level
 
-Downloaded once, cached under cache/deprivation/.
-Each loader returns the input grid with a new column `deprivation_score` ∈ [0, 1]
-where 1 = most deprived.  Cells outside all zones get the median score.
-Falls back to neutral 0.5 on any download / parse failure.
+Downloaded once, cached atomically under cache/deprivation/.
+Each per-city loader returns (grid, zones_joined): the input grid with a new column
+`deprivation_score` ∈ [0, 1] where 1 = most deprived (cells outside all zones get
+the median score), plus the count of real census zones joined.
+
+The public `load_deprivation` dispatcher returns (grid, status) and falls back to a
+neutral 0.5 score on any download / parse failure — but the returned `status` records
+the provenance (`deprivation_source`: 'real' | 'neutral_fallback') so a degraded run
+is distinguishable from a real one in the exported report.
 """
 
 from __future__ import annotations
 
 import io
 import json
+import os
 import tempfile
 import zipfile
 from pathlib import Path
+from urllib.parse import urlparse
 
 import geopandas as gpd
 import numpy as np
@@ -29,11 +36,168 @@ _REPO_ROOT = Path(__file__).parent.parent
 _DEPR_CACHE = _REPO_ROOT / "cache" / "deprivation"
 _UA = {"User-Agent": "PublicRealmPlanner/1.0 (research; open-source)"}
 
+# ── download / extraction safety limits (defense-in-depth, build host) ─────────
+# Cap how much we download and how much we extract from any remote archive so a
+# malicious or corrupt source can't exhaust disk/RAM on the CI runner.
+_MAX_DOWNLOAD_BYTES = 600 * 1024 * 1024     # 600 MB cap on any single response
+_MAX_EXTRACT_BYTES = 2 * 1024 * 1024 * 1024  # 2 GB total uncompressed per archive
+_MAX_COMPRESSION_RATIO = 200                 # per-member zip-bomb guard
 
-def _get(url: str, params: dict | None = None, timeout: int = 90) -> requests.Response:
-    r = requests.get(url, params=params, headers=_UA, timeout=timeout)
+# Host-allowlist for any *dynamically-resolved* zip_url (e.g. data.gouv.fr API).
+# Hard-coded constant URLs below are trusted by definition; this guards the case
+# where a third-party API hands us an arbitrary download URL.
+_ALLOWED_ZIP_HOSTS = {
+    "www.data.gouv.fr",
+    "data.gouv.fr",
+    "static.data.gouv.fr",
+    "object.files.data.gouv.fr",
+    "www.insee.fr",
+    "insee.fr",
+    "raw.githubusercontent.com",
+    "github.com",
+    "objects.githubusercontent.com",
+    "assets.publishing.service.gov.uk",
+}
+
+
+def _close_quietly(r: requests.Response) -> None:
+    try:
+        r.close()
+    except Exception:
+        pass
+
+
+def _get(url: str, params: dict | None = None, timeout: int = 90,
+         max_bytes: int = _MAX_DOWNLOAD_BYTES) -> requests.Response:
+    """HTTP GET with a streamed size cap (decompression/oversize-bomb guard)."""
+    r = requests.get(url, params=params, headers=_UA, timeout=timeout, stream=True)
     r.raise_for_status()
+    # Reject obvious oversize responses up front when the server declares a length.
+    declared = r.headers.get("Content-Length")
+    if declared is not None and declared.isdigit() and int(declared) > max_bytes:
+        _close_quietly(r)
+        raise ValueError(
+            f"response too large ({int(declared)} bytes > {max_bytes} cap): {url}"
+        )
+    # Stream and enforce the cap even when Content-Length is missing/lying.
+    chunks: list[bytes] = []
+    total = 0
+    for chunk in r.iter_content(chunk_size=1 << 16):
+        if not chunk:
+            continue
+        total += len(chunk)
+        if total > max_bytes:
+            _close_quietly(r)
+            raise ValueError(f"response exceeded {max_bytes} byte cap: {url}")
+        chunks.append(chunk)
+    _close_quietly(r)
+    # Backfill `_content` so callers can use .content / .text / .json() unchanged.
+    r._content = b"".join(chunks)
     return r
+
+
+def _assert_safe_zip_url(url: str) -> None:
+    """Enforce https + host-allowlist on a dynamically-resolved archive URL."""
+    parsed = urlparse(url)
+    if parsed.scheme != "https":
+        raise ValueError(f"refusing non-https archive URL: {url!r}")
+    host = (parsed.hostname or "").lower()
+    if host not in _ALLOWED_ZIP_HOSTS:
+        raise ValueError(f"archive host {host!r} not in allowlist: {url!r}")
+
+
+def _safe_extract_zip(zf: zipfile.ZipFile, dest: Path) -> None:
+    """
+    Extract a zip archive member-by-member with containment + size guards.
+
+    Defends against:
+      • zip-slip   — a member path that escapes `dest` via .. or absolute paths
+      • zip-bomb   — total uncompressed size, and per-member compression ratio
+    Uses realpath containment so symlink-style escapes are also caught.
+    """
+    dest = dest.resolve()
+    total = 0
+    for info in zf.infolist():
+        if info.is_dir():
+            continue
+        # Reject absolute paths / drive letters outright.
+        name = info.filename
+        if name.startswith(("/", "\\")) or (len(name) > 1 and name[1] == ":"):
+            raise ValueError(f"unsafe absolute path in archive: {name!r}")
+
+        target = (dest / name).resolve()
+        # Containment: the resolved target must live under dest.
+        if os.path.commonpath([dest, target]) != str(dest):
+            raise ValueError(f"zip-slip blocked for member {name!r}")
+
+        size = info.file_size
+        comp = info.compress_size or 1
+        if size and (size / comp) > _MAX_COMPRESSION_RATIO:
+            raise ValueError(
+                f"member {name!r} compression ratio {size / comp:.0f} exceeds "
+                f"{_MAX_COMPRESSION_RATIO} (zip-bomb guard)"
+            )
+        total += size
+        if total > _MAX_EXTRACT_BYTES:
+            raise ValueError(
+                f"archive uncompressed size exceeds {_MAX_EXTRACT_BYTES} cap"
+            )
+
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with zf.open(info) as src, open(target, "wb") as out:
+            out.write(src.read())
+
+
+def _atomic_write(path: Path, write_fn) -> None:
+    """
+    Write a cache file atomically: write to a temp file in the same directory,
+    then os.replace() into place. An interrupted write therefore cannot leave a
+    truncated/corrupt cache that would poison future runs.
+
+    `write_fn(tmp_path: Path)` must materialise the full file at `tmp_path`.
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent)
+    )
+    os.close(fd)
+    tmp = Path(tmp_name)
+    try:
+        write_fn(tmp)
+        os.replace(tmp, path)
+    finally:
+        if tmp.exists():
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+
+
+def _read_cached_csv(path: Path, required_cols: list[str], **kwargs) -> pd.DataFrame | None:
+    """Read a cached CSV, returning None if it's missing/empty/malformed."""
+    if not path.exists():
+        return None
+    try:
+        df = pd.read_csv(path, **kwargs)
+    except Exception:
+        return None
+    if len(df) == 0 or not all(c in df.columns for c in required_cols):
+        return None
+    return df
+
+
+def _read_cached_gdf(path: Path, required_cols: list[str]) -> gpd.GeoDataFrame | None:
+    """Read a cached geo file, returning None if it's missing/empty/malformed."""
+    if not path.exists():
+        return None
+    try:
+        gdf = gpd.read_file(path)
+    except Exception:
+        return None
+    if len(gdf) == 0 or not all(c in gdf.columns for c in required_cols):
+        return None
+    return gdf
 
 
 def _cache_dir(city: str) -> Path:
@@ -98,8 +262,9 @@ def _load_paris_iris_api() -> gpd.GeoDataFrame:
     from shapely.geometry import shape as shapely_shape
 
     cached = _cache_dir("paris") / "iris_geom_75.gpkg"
-    if cached.exists():
-        return gpd.read_file(cached)
+    cached_gdf = _read_cached_gdf(cached, ["IRIS", "geometry"])
+    if cached_gdf is not None:
+        return cached_gdf
 
     print("  fetching Paris IRIS geometries (opendatasoft)...")
     features: list[dict] = []
@@ -138,7 +303,7 @@ def _load_paris_iris_api() -> gpd.GeoDataFrame:
     gdf = gpd.GeoDataFrame(rows, crs="EPSG:4326")
     # Deduplicate: multiple millesimes share the same IRIS code; keep one geometry
     gdf = gdf.drop_duplicates(subset="IRIS").reset_index(drop=True)
-    gdf.to_file(cached, driver="GPKG")
+    _atomic_write(cached, lambda p: gdf.to_file(p, driver="GPKG"))
     print(f"  cached {len(gdf)} Paris IRIS polygons")
     return gdf
 
@@ -151,8 +316,9 @@ def _load_paris_iris_zip() -> gpd.GeoDataFrame:
     from shapely.geometry import shape as shapely_shape
 
     cached = _cache_dir("paris") / "iris_geom_75.gpkg"
-    if cached.exists():
-        return gpd.read_file(cached)
+    cached_gdf = _read_cached_gdf(cached, ["IRIS", "geometry"])
+    if cached_gdf is not None:
+        return cached_gdf
 
     # Resolve latest resource URL via data.gouv.fr API
     print("  resolving contours-IRIS resource URL (data.gouv.fr)...")
@@ -166,13 +332,15 @@ def _load_paris_iris_zip() -> gpd.GeoDataFrame:
     if not zip_resource:
         raise ValueError("No zip resource found on data.gouv.fr for contours-IRIS")
     zip_url = zip_resource["url"]
+    # The URL is supplied by a third-party API → enforce https + host allowlist.
+    _assert_safe_zip_url(zip_url)
     print(f"  downloading IRIS contours from {zip_url}...")
     resp = _get(zip_url, timeout=180)
     with zipfile.ZipFile(io.BytesIO(resp.content)) as zf:
         shp = next((n for n in zf.namelist() if n.endswith(".shp")), None)
         if shp:
             with tempfile.TemporaryDirectory() as tmp:
-                zf.extractall(tmp)
+                _safe_extract_zip(zf, Path(tmp))
                 gdf = gpd.read_file(Path(tmp) / shp)
         else:
             jsn = next(n for n in zf.namelist() if n.endswith((".geojson", ".json")))
@@ -182,15 +350,16 @@ def _load_paris_iris_zip() -> gpd.GeoDataFrame:
     iris_col = next((c for c in ["CODE_IRIS", "IRIS", "GRD_QUART"] if c in gdf.columns), gdf.columns[0])
     gdf = gdf[gdf[iris_col].astype(str).str.startswith("75", na=False)].copy()
     gdf = gdf.rename(columns={iris_col: "IRIS"})[["IRIS", "geometry"]]
-    gdf.to_file(cached, driver="GPKG")
+    _atomic_write(cached, lambda p: gdf.to_file(p, driver="GPKG"))
     return gdf
 
 
 def _load_paris_filosofi() -> pd.DataFrame:
     """Download and cache FILOSOFI 2019 poverty rates for Paris IRIS."""
     cached = _cache_dir("paris") / "filosofi_paris_2019.csv"
-    if cached.exists():
-        return pd.read_csv(cached, dtype={"IRIS": str})
+    cached_df = _read_cached_csv(cached, ["IRIS", "poverty_rate"], dtype={"IRIS": str})
+    if cached_df is not None:
+        return cached_df
 
     print("  downloading INSEE FILOSOFI 2019 (national zip, filtered to dept 75)...")
     resp = _get(_PARIS_FILO_URL, timeout=180)
@@ -233,7 +402,7 @@ def _load_paris_filosofi() -> pd.DataFrame:
 
     df["poverty_rate"] = pd.to_numeric(df[rate_col], errors="coerce")
     result = df[["IRIS", "poverty_rate"]].dropna(subset=["poverty_rate"])
-    result.to_csv(cached, index=False)
+    _atomic_write(cached, lambda p: result.to_csv(p, index=False))
     print(f"  FILOSOFI: {len(result)} Paris IRIS with poverty data")
     return result
 
@@ -242,8 +411,11 @@ def load_deprivation_paris(
     grid: gpd.GeoDataFrame,
     boundary: gpd.GeoDataFrame,
     city_crs: int,
-) -> gpd.GeoDataFrame:
-    """INSEE FILOSOFI 2019 poverty rate → deprivation_score [0, 1]."""
+) -> tuple[gpd.GeoDataFrame, int]:
+    """INSEE FILOSOFI 2019 poverty rate → deprivation_score [0, 1].
+
+    Returns (grid, zones_joined).
+    """
     # IRIS geometry: try fast API first, fall back to large zip
     try:
         iris_geom = _load_paris_iris_api()
@@ -263,10 +435,9 @@ def load_deprivation_paris(
         if hi > lo else 0.5
     )
     grid = _spatial_join_scores(grid, zones, "deprivation_score", city_crs)
-    covered = (grid["deprivation_score"] != grid["deprivation_score"].median()).mean() * 100
     print(f"  Paris deprivation: {len(zones)} IRIS zones joined  "
           f"(poverty range {lo:.1f}%–{hi:.1f}%)")
-    return grid
+    return grid, len(zones)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -294,8 +465,9 @@ def _load_antwerp_bimd() -> pd.DataFrame:
     Filter to Antwerp city (NIS prefix '11002').
     """
     cached = _cache_dir("antwerp") / "bimd2011.csv"
-    if cached.exists():
-        return pd.read_csv(cached, dtype={"cd_sector": str})
+    cached_df = _read_cached_csv(cached, ["cd_sector", "bimd_score"], dtype={"cd_sector": str})
+    if cached_df is not None:
+        return cached_df
 
     print("  downloading BIMD 2011 from github.com/bimd-project/BIMD...")
     resp = _get(_ANTWERP_BIMD_URL)
@@ -310,7 +482,7 @@ def _load_antwerp_bimd() -> pd.DataFrame:
 
     df["bimd_score"] = pd.to_numeric(df["BIMD2011_score"], errors="coerce")
     result = df[["cd_sector", "bimd_score"]].dropna(subset=["bimd_score"])
-    result.to_csv(cached, index=False)
+    _atomic_write(cached, lambda p: result.to_csv(p, index=False))
     print(f"  BIMD: {len(result)} Antwerp sectors with scores")
     return result
 
@@ -322,8 +494,9 @@ def _load_antwerp_sectors() -> gpd.GeoDataFrame:
     Join key: CD_SECTOR → cd_sector (matches BIMD CSV CD_RES_SECTOR).
     """
     cached = _cache_dir("antwerp") / "stat_sectors_antwerp.gpkg"
-    if cached.exists():
-        return gpd.read_file(cached)
+    cached_gdf = _read_cached_gdf(cached, ["cd_sector", "geometry"])
+    if cached_gdf is not None:
+        return cached_gdf
 
     print("  downloading BIMD 2011 shapefile from github.com/bimd-project/BIMD...")
     resp = _get(_ANTWERP_SECTORS_URL, timeout=120)
@@ -332,14 +505,14 @@ def _load_antwerp_sectors() -> gpd.GeoDataFrame:
         if shp is None:
             raise ValueError(f"No .shp found in BIMD zip. Contents: {zf.namelist()}")
         with tempfile.TemporaryDirectory() as tmp:
-            zf.extractall(tmp)
+            _safe_extract_zip(zf, Path(tmp))
             gdf = gpd.read_file(Path(tmp) / shp)
 
     # Filter to Antwerp city (NIS code 11002)
     gdf = gdf[gdf["CD_MUNTY_R"].astype(str) == _ANTWERP_NIS_PREFIX].copy()
     gdf = gdf.rename(columns={"CD_SECTOR": "cd_sector"})[["cd_sector", "geometry"]]
     gdf["cd_sector"] = gdf["cd_sector"].astype(str).str.strip()
-    gdf.to_file(cached, driver="GPKG")
+    _atomic_write(cached, lambda p: gdf.to_file(p, driver="GPKG"))
     print(f"  Antwerp stat sectors: {len(gdf)} zones saved")
     return gdf
 
@@ -348,8 +521,11 @@ def load_deprivation_antwerp(
     grid: gpd.GeoDataFrame,
     boundary: gpd.GeoDataFrame,
     city_crs: int,
-) -> gpd.GeoDataFrame:
-    """Statbel BIMD 2011 → deprivation_score [0, 1]."""
+) -> tuple[gpd.GeoDataFrame, int]:
+    """Statbel BIMD 2011 → deprivation_score [0, 1].
+
+    Returns (grid, zones_joined).
+    """
     bimd = _load_antwerp_bimd()
     sectors = _load_antwerp_sectors()
 
@@ -371,7 +547,7 @@ def load_deprivation_antwerp(
     grid = _spatial_join_scores(grid, zones, "deprivation_score", city_crs)
     print(f"  Antwerp deprivation: {len(zones)} sectors joined  "
           f"(BIMD range {lo:.2f}–{hi:.2f})")
-    return grid
+    return grid, len(zones)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -398,8 +574,9 @@ def _load_london_imd() -> pd.DataFrame:
     Decile is also accepted as a last resort.
     """
     cached = _cache_dir("london") / "imd2019_file1.csv"
-    if cached.exists():
-        return pd.read_csv(cached, dtype={"LSOA11CD": str})
+    cached_df = _read_cached_csv(cached, ["LSOA11CD", "imd_score"], dtype={"LSOA11CD": str})
+    if cached_df is not None:
+        return cached_df
 
     print("  downloading ONS IMD 2019 (File 1)...")
     resp = _get(_LONDON_IMD_URL)
@@ -438,15 +615,16 @@ def _load_london_imd() -> pd.DataFrame:
         df["imd_score"] = df["_raw"]
 
     result = df[["LSOA11CD", "imd_score"]]
-    result.to_csv(cached, index=False)
+    _atomic_write(cached, lambda p: result.to_csv(p, index=False))
     print(f"  IMD 2019: {len(result)} LSOAs ({'rank-inverted' if use_inverted else 'score'})")
     return result
 
 
 def _load_london_lsoa(boundary: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     cached = _cache_dir("london") / "lsoa2011_london.gpkg"
-    if cached.exists():
-        return gpd.read_file(cached)
+    cached_gdf = _read_cached_gdf(cached, ["LSOA11CD", "geometry"])
+    if cached_gdf is not None:
+        return cached_gdf
 
     print("  downloading London LSOA 2011 boundaries (ONS ArcGIS REST)...")
     bbox = boundary.to_crs(4326).total_bounds
@@ -481,7 +659,7 @@ def _load_london_lsoa(boundary: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     result = gpd.GeoDataFrame(
         pd.concat(gdfs, ignore_index=True), crs="EPSG:4326"
     )
-    result.to_file(cached, driver="GPKG")
+    _atomic_write(cached, lambda p: result.to_file(p, driver="GPKG"))
     print(f"  LSOA: {len(result)} zones saved")
     return result
 
@@ -490,8 +668,11 @@ def load_deprivation_london(
     grid: gpd.GeoDataFrame,
     boundary: gpd.GeoDataFrame,
     city_crs: int,
-) -> gpd.GeoDataFrame:
-    """ONS IMD 2019 score → deprivation_score [0, 1]."""
+) -> tuple[gpd.GeoDataFrame, int]:
+    """ONS IMD 2019 score → deprivation_score [0, 1].
+
+    Returns (grid, zones_joined).
+    """
     imd = _load_london_imd()
     lsoa = _load_london_lsoa(boundary)
 
@@ -507,7 +688,7 @@ def load_deprivation_london(
     grid = _spatial_join_scores(grid, zones, "deprivation_score", city_crs)
     print(f"  London deprivation: {len(zones)} LSOA zones joined  "
           f"(IMD score range {lo:.1f}–{hi:.1f})")
-    return grid
+    return grid, len(zones)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -526,21 +707,43 @@ def load_deprivation(
     grid: gpd.GeoDataFrame,
     boundary: gpd.GeoDataFrame,
     city_crs: int,
-) -> gpd.GeoDataFrame:
+) -> tuple[gpd.GeoDataFrame, dict]:
     """
-    Return grid with `deprivation_score` ∈ [0, 1] (1 = most deprived).
-    Falls back to neutral 0.5 on any failure so the engine run continues.
+    Return (grid, status) where:
+      • grid    — input grid with `deprivation_score` ∈ [0, 1] (1 = most deprived)
+      • status  — provenance dict so a fallback run is distinguishable from a real one:
+            {
+              "deprivation_source": "real" | "neutral_fallback",
+              "zones_joined":       <int>,   # real census zones joined (0 on fallback)
+              "reason":             <str|None>,  # failure cause when fallback
+            }
+
+    Falls back to a neutral 0.5 score on any failure so the engine run continues,
+    but the status makes that degradation visible downstream (report.json/scenario.json).
     """
     loader = _LOADERS.get(city_key)
     if loader is None:
         print(f"  no deprivation loader for {city_key!r} — using neutral 0.5")
         grid = grid.copy()
         grid["deprivation_score"] = 0.5
-        return grid
+        return grid, {
+            "deprivation_source": "neutral_fallback",
+            "zones_joined": 0,
+            "reason": f"no loader registered for {city_key!r}",
+        }
     try:
-        return loader(grid, boundary, city_crs)
+        grid, zones_joined = loader(grid, boundary, city_crs)
+        return grid, {
+            "deprivation_source": "real",
+            "zones_joined": int(zones_joined),
+            "reason": None,
+        }
     except Exception as exc:
         print(f"  ⚠ deprivation failed for {city_key} ({exc!r}) — using neutral 0.5")
         grid = grid.copy()
         grid["deprivation_score"] = 0.5
-        return grid
+        return grid, {
+            "deprivation_source": "neutral_fallback",
+            "zones_joined": 0,
+            "reason": repr(exc),
+        }
