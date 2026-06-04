@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { SkeletonCard } from "./Status";
+import { H3_RES9_AREA_KM2, cityAreaKm2, assetDensityPer10Km2 } from "../lib/scenario";
 
 const ASSET_LABELS = {
   toilets:          "Toilets",
@@ -19,7 +20,6 @@ const CITY_META = {
 };
 
 const CITIES = ["paris", "antwerp", "london"];
-const H3_RES9_AREA_KM2 = 0.1054;  // average H3 resolution 9 cell area
 
 function CoverageBar({ before, after }) {
   return (
@@ -126,8 +126,8 @@ export default function CompareView({ asset: assetProp, onAssetChange }) {
                 );
               }
 
-              const areakm2     = Math.round((r.n_grid_cells ?? 0) * H3_RES9_AREA_KM2);
-              const densityRaw  = areakm2 ? (r.n_existing_assets / areakm2) * 10 : 0;
+              const areakm2     = cityAreaKm2(r.n_grid_cells);
+              const densityRaw  = assetDensityPer10Km2(r.n_existing_assets, r.n_grid_cells);
               const density     = densityRaw >= 10 ? Math.round(densityRaw) : densityRaw.toFixed(1);
               const gain        = ((r.coverage_after - r.coverage_before) * 100).toFixed(1);
               const hasGain     = r.coverage_after > r.coverage_before + 0.001;

@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import MapView from "./components/MapView";
 import ControlPanel from "./components/ControlPanel";
 import { Loader, ErrorState, EmptyState } from "./components/Status";
+import { IconHelp, IconMenu } from "./components/Icons";
+import { selectByBudget, coverageAt } from "./lib/scenario";
 
 // Conditional-only views — code-split so they stay out of the initial bundle.
 const ReportView  = lazy(() => import("./components/ReportView"));
@@ -190,16 +192,16 @@ export default function App() {
   // clamp budget to maxBudget when city changes
   useEffect(() => { setBudget((b) => Math.min(b, maxBudget)); }, [maxBudget]);
 
-  const selectedFiltered = useMemo(() => {
-    if (!coreData?.selected?.features) return [];
-    return coreData.selected.features.filter((f) => f.properties.rank <= budget);
-  }, [coreData, budget]);
+  const selectedFiltered = useMemo(
+    () => selectByBudget(coreData?.selected?.features, budget),
+    [coreData, budget]
+  );
 
   // ── coverage stats ────────────────────────────────────────────────────────
   const scenario = coreData?.scenario ?? null;
   const steps = scenario?.coverage_steps ?? [];
-  const coverageBefore = steps[0] ?? 0;
-  const coverageAfter  = steps[budget] ?? coverageBefore;
+  const coverageBefore = coverageAt(steps, 0);
+  const coverageAfter  = coverageAt(steps, budget);
 
   // ── report ────────────────────────────────────────────────────────────────
   const [showReport, setShowReport] = useState(false);
@@ -252,16 +254,18 @@ export default function App() {
       <header className="app-header">
         <div className="header-top">
           <h1>City Planner</h1>
-          <div className="mode-toggle">
+          <div className="mode-toggle" role="group" aria-label="View mode">
             <button
               className={`mode-btn ${mode === "map" ? "active" : ""}`}
               onClick={() => setMode("map")}
+              aria-pressed={mode === "map"}
             >
               Map
             </button>
             <button
               className={`mode-btn ${mode === "compare" ? "active" : ""}`}
               onClick={() => setMode("compare")}
+              aria-pressed={mode === "compare"}
             >
               Compare
             </button>
@@ -273,7 +277,7 @@ export default function App() {
               title="Start tour"
               aria-label="Start product tour"
             >
-              ?
+              <IconHelp />
             </button>
           </div>
         </div>
@@ -364,6 +368,7 @@ export default function App() {
             onLayersChange={setLayers}
             onReportOpen={() => setShowReport(true)}
             asset={selection.asset}
+            dataReady={{ units: !!units, pois: !!pois }}
           />
           {panelOpen && (
             <button
@@ -388,7 +393,7 @@ export default function App() {
             onClick={() => setPanelOpen((o) => !o)}
             aria-expanded={panelOpen}
           >
-            ☰ Scenario
+            <IconMenu /> Scenario
           </button>
         </div>
       )}

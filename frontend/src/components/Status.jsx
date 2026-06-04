@@ -2,6 +2,7 @@
  * Shared status surfaces: Loader, ErrorState, EmptyState, Skeleton.
  * Centralised so loading / error / empty look identical everywhere.
  */
+import { IconAlert, IconInbox } from "./Icons";
 
 export function Spinner({ size = 28 }) {
   return (
@@ -31,7 +32,7 @@ export function ErrorState({
 }) {
   return (
     <div className={`status status--error ${fill ? "status--fill" : ""}`} role="alert">
-      <div className="status-icon status-icon--error" aria-hidden="true">!</div>
+      <div className="status-icon status-icon--error" aria-hidden="true"><IconAlert /></div>
       <p className="status-title">{title}</p>
       {message && <p className="status-msg">{message}</p>}
       {onRetry && (
@@ -46,7 +47,7 @@ export function ErrorState({
 export function EmptyState({ title = "No data", message, fill = false }) {
   return (
     <div className={`status status--empty ${fill ? "status--fill" : ""}`}>
-      <div className="status-icon" aria-hidden="true">—</div>
+      <div className="status-icon" aria-hidden="true"><IconInbox /></div>
       <p className="status-title">{title}</p>
       {message && <p className="status-msg">{message}</p>}
     </div>

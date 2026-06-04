@@ -1,3 +1,6 @@
+import { Spinner } from "./Status";
+import { MAP_COLORS, SCORE_RAMP } from "../mapColors";
+
 function CoverageBar({ label, value, color }) {
   return (
     <div className="coverage-bar-row">
@@ -36,17 +39,18 @@ export default function ControlPanel({
   onLayersChange,
   onReportOpen,
   asset,
+  dataReady = {},
 }) {
   const gain = coverageAfter - coverageBefore;
   const meta = scenario?.meta ?? {};
   const assetLabel = ASSET_LABELS[asset] ?? asset ?? "assets";
 
   const LAYER_DEFS = [
-    { key: "coverage", label: "Coverage zones (500 m)",            color: "#3b82f6" },
-    { key: "assets",   label: `Existing ${assetLabel}`,            color: "#3b82f6" },
-    { key: "selected", label: "Recommendations",                    color: "#f97316" },
-    { key: "pois",     label: "Demand POIs",                       color: "#8b5cf6" },
-    { key: "units",    label: "Score grid (H3)",                   color: "#fdae61" },
+    { key: "coverage", label: "Coverage zones (500 m)",  color: MAP_COLORS.existing },
+    { key: "assets",   label: `Existing ${assetLabel}`,  color: MAP_COLORS.existing },
+    { key: "selected", label: "Recommendations",          color: MAP_COLORS.recommended },
+    { key: "pois",     label: "Demand POIs",             color: MAP_COLORS.poi },
+    { key: "units",    label: "Score grid (H3)",         color: SCORE_RAMP[2] },
   ];
 
   function toggle(key) {
@@ -77,9 +81,9 @@ export default function ControlPanel({
 
       <section className="panel-section">
         <h3>Coverage (500 m walk)</h3>
-        <CoverageBar label="Before" value={coverageBefore} color="#3b82f6" />
+        <CoverageBar label="Before" value={coverageBefore} color={MAP_COLORS.existing} />
         <div aria-live="polite" role="status">
-          <CoverageBar label="After" value={coverageAfter} color="#22c55e" />
+          <CoverageBar label="After" value={coverageAfter} color="var(--c-success)" />
           {gain > 0.001 ? (
             <p className="gain-label">+{(gain * 100).toFixed(1)}% more demand covered</p>
           ) : (
@@ -110,17 +114,27 @@ export default function ControlPanel({
 
       <section className="panel-section">
         <h3>Layers</h3>
-        {LAYER_DEFS.map(({ key, label, color }) => (
-          <label key={key} className="layer-toggle">
-            <input
-              type="checkbox"
-              checked={layers[key]}
-              onChange={() => toggle(key)}
-            />
-            <span className="layer-dot" style={{ background: color }} />
-            {label}
-          </label>
-        ))}
+        {LAYER_DEFS.map(({ key, label, color }) => {
+          // heavy layers (units/pois) load in the background — show a spinner
+          // while the layer is enabled but its data hasn't arrived yet
+          const isHeavy = key === "units" || key === "pois";
+          const loading = isHeavy && layers[key] && !dataReady[key];
+          return (
+            <label key={key} className="layer-toggle">
+              <input
+                type="checkbox"
+                checked={layers[key]}
+                onChange={() => toggle(key)}
+              />
+              {loading ? (
+                <Spinner size={12} />
+              ) : (
+                <span className="layer-dot" style={{ background: color }} />
+              )}
+              {label}
+            </label>
+          );
+        })}
       </section>
 
       <section className="panel-section note panel-section--footer">
