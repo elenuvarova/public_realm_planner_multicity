@@ -35,14 +35,17 @@ function getRect(selector) {
   return el ? el.getBoundingClientRect() : null;
 }
 
+const CENTERED = { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10000 };
+
 function tooltipStyle(rect) {
-  if (!rect) {
-    return { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10000 };
-  }
+  if (!rect) return CENTERED;
   const PAD = 16;
   const W = 300;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+
+  // large element (fills most of viewport) — center the card over it
+  if (rect.width > vw * 0.5 || rect.height > vh * 0.5) return CENTERED;
 
   // prefer below; if near bottom prefer above; if on right prefer left
   if (rect.bottom + 180 < vh) {
