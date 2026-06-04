@@ -1316,8 +1316,16 @@ button {
   .header-actions { margin-left: auto; order: 0; }
   .app-header h1 { font-size: var(--fs-base); }
   .header-selectors { gap: var(--sp-3); width: 100%; }
-  .header-select-label { flex: 1; }
-  .header-select { flex: 1; min-width: 0; height: 36px; }
+  /* stack the label text above the select so each dropdown gets its full half
+     of the row and the longer "ASSET TYPE" value stops getting clipped */
+  .header-select-label {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-1);
+  }
+  .header-select { width: 100%; min-width: 0; height: 36px; }
 
   /* larger touch targets */
   .mode-btn { padding: var(--sp-2) var(--sp-3); min-height: 36px; }
