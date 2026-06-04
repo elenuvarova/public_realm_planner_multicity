@@ -605,6 +605,8 @@ button {
   gap: var(--sp-2);
   padding: 0 var(--sp-2_5) var(--sp-2_5);
 }
+/* the [hidden] attribute alone is overridden by display:flex above — enforce it */
+.map-legend__body[hidden] { display: none; }
 
 .map-legend__swatch {
   width: 20px;
@@ -1369,13 +1371,13 @@ button {
   .compare-body { padding: var(--sp-4) var(--sp-4) var(--sp-8); }
   .compare-norm-banner { flex-direction: column; gap: var(--sp-1_5); }
 
-  .panel-toggle {
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: var(--sp-4);
-    padding: var(--sp-2_5) var(--sp-5);
-    font-size: var(--fs-base);
-    box-shadow: var(--shadow-lg);
+  /* legend sits in the bottom-left corner, stacked ABOVE the Scenario pill so
+     the two don't collide; lower z-index so the open layers drawer covers it */
+  .map-legend {
+    left: var(--sp-3);
+    bottom: calc(var(--sp-3) + 2.75rem);
+    z-index: 440;
+    max-width: 200px;
   }
 
   .compare-asset-tabs { padding: var(--sp-2) var(--sp-3); gap: var(--sp-1_5); }
