@@ -22,12 +22,13 @@
   --fw-extrabold:800;
 
   --lh-tight:   1.2;
-  --lh-snug:    1.35;
-  --lh-normal:  1.5;
+  --lh-snug:    1.4;
+  --lh-normal:  1.55;
   --lh-relaxed: 1.65;
 
-  --tracking-wide:  0.06em;
-  --tracking-wider: 0.1em;
+  --tracking-tight: -0.02em;
+  --tracking-wide:  0.05em;
+  --tracking-wider: 0.09em;
 
   /* — spacing: 4px grid (+ a few half-steps for dense UI) — */
   --sp-0:   0;
@@ -171,7 +172,7 @@ button {
 .app-header h1 {
   font-size: var(--fs-base);
   font-weight: var(--fw-bold);
-  letter-spacing: 0.01em;
+  letter-spacing: var(--tracking-tight);
   flex-shrink: 0;
 }
 
@@ -699,7 +700,7 @@ button {
   font-size: var(--fs-2xl);
   font-weight: var(--fw-extrabold);
   color: var(--c-ink);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tracking-tight);
   line-height: var(--lh-tight);
 }
 
@@ -953,6 +954,7 @@ button {
   font-weight: var(--fw-extrabold);
   color: var(--c-ink);
   line-height: 1;
+  letter-spacing: var(--tracking-tight);
   font-variant-numeric: tabular-nums;
 }
 
