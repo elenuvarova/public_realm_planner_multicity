@@ -185,7 +185,7 @@ button {
   flex-direction: row;
   align-items: center;
   gap: var(--sp-1_5);
-  font-size: var(--fs-2xs);
+  font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
