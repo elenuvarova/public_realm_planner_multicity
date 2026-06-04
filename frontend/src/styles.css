@@ -76,7 +76,9 @@
   --c-text:        #111827;
   --c-text-2:      #374151;
   --c-text-muted:  #64748b;
-  --c-text-subtle: #94a3b8;
+  /* darkened from #94a3b8 (2.56:1 on white — failed AA) to pass WCAG 2.2 AA
+     4.5:1 for body text on white/surface-2/surface-3 backgrounds (>=5.8:1) */
+  --c-text-subtle: #556070;
   --c-on-ink:      #f8fafc;
   --c-on-ink-muted:#94a3b8;
 
@@ -95,6 +97,14 @@
   --c-danger-bg:  #fee2e2;
   --c-danger-text:#b91c1c;
   --c-poi:        #8b5cf6;
+
+  /* — colour: TES service-gap score ramp (ColorBrewer YlOrRd, 5-class,
+       colourblind-safe sequential) — well served → underserved — */
+  --c-score-1: #ffffb2;  /* well served (Score >= 86), palest yellow */
+  --c-score-2: #fecc5c;  /* Score >= 79 */
+  --c-score-3: #fd8d3c;  /* Score >= 72 */
+  --c-score-4: #f03b20;  /* Score >= 65 */
+  --c-score-5: #bd0026;  /* underserved (Score < 65), darkest red */
 
   /* — shadow — */
   --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
@@ -133,11 +143,12 @@ button {
   font-family: inherit;
 }
 
-/* shared visible focus for keyboard users */
+/* shared visible focus for keyboard users — ring follows each control's own
+   radius so pill controls don't show a clipped/square ring */
 :where(button, select, a, input, [tabindex]):focus-visible {
   outline: none;
   box-shadow: var(--ring);
-  border-radius: var(--radius-sm);
+  border-radius: inherit;
 }
 
 /* ============================================================================
@@ -472,6 +483,14 @@ button {
 /* ============================================================================
    MAP
    ========================================================================== */
+/* wrapper around the Leaflet map — positioning context for the absolute legend */
+.leaflet-map-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  display: flex;
+}
+
 .leaflet-map {
   flex: 1;
   height: 100%;
@@ -516,6 +535,84 @@ button {
 }
 
 .unit-tooltip::before { display: none; }
+
+/* ============================================================================
+   MAP LEGEND
+   Bottom-LEFT card (Leaflet zoom control sits bottom-right). Layout/typography
+   only — all ramp/dot colours arrive inline from MapView.
+   ========================================================================== */
+.map-legend {
+  position: absolute;
+  left: var(--sp-3);
+  bottom: var(--sp-3);
+  z-index: 600;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--sp-2_5) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  max-width: 220px;
+  pointer-events: auto;
+}
+
+.map-legend__title {
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--c-text-muted);
+}
+
+.map-legend__ramp {
+  display: flex;
+  flex-direction: row;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.map-legend__swatch {
+  width: 20px;
+  height: 12px;
+  flex-shrink: 0;
+  /* colour set inline from MapView */
+}
+
+.map-legend__scale {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: var(--fs-2xs);
+  color: var(--c-text-muted);
+}
+
+.map-legend__items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  margin-top: var(--sp-0_5);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--c-border-soft);
+}
+
+.map-legend__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1_5);
+  font-size: var(--fs-2xs);
+  color: var(--c-text-2);
+}
+
+.map-legend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  /* colour set inline from MapView */
+}
 
 /* ============================================================================
    STATUS SURFACES (loading / error / empty / skeleton)
@@ -623,9 +720,37 @@ button {
   margin-top: var(--sp-2);
 }
 
+/* ----------------------------------------------------------------------------
+   REDUCED MOTION
+   Centralised: neutralise microanimations (markerPop, fadeIn) and transition-
+   driven motion for users who prefer reduced motion. Spinner is slowed (not
+   removed) so loading state still reads; skeleton shimmer is stopped.
+   ---------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  .spinner { animation-duration: 1.6s; }
-  .skeleton::after { animation: none; }
+  /* drop transition-driven motion site-wide; keep the visual end-state instant */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* explicitly kill the named microanimations */
+  .rank-marker,
+  .leaflet-map,
+  .panel-section {
+    animation: none !important;
+  }
+
+  .skeleton::after { animation: none !important; }
+
+  /* keep a slow spinner so the loading state still reads as "working" */
+  .spinner {
+    animation: spin 1.6s linear infinite !important;
+    animation-duration: 1.6s !important;
+  }
 }
 
 /* ============================================================================
@@ -932,7 +1057,7 @@ button {
   border-top-width: 4px;
 }
 
-.compare-card--high    { border-top-color: #22c55e; }
+.compare-card--high    { border-top-color: var(--c-success); }
 .compare-card--mid     { border-top-color: var(--c-warning); }
 .compare-card--low     { border-top-color: #ef4444; }
 .compare-card--missing { border-top-color: var(--c-border-strong); opacity: 0.6; }
@@ -994,7 +1119,7 @@ button {
 }
 
 .ccbar-fill--before { background: var(--c-info); }
-.ccbar-fill--after  { background: #22c55e; }
+.ccbar-fill--after  { background: var(--c-success); }
 
 .ccbar-pct {
   width: 44px;

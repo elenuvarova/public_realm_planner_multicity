@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 const CITY_LABELS = {
   paris:   "Paris, France",
@@ -37,6 +37,51 @@ function assetSource(assets) {
   return { label: "OpenStreetMap (ODbL)", conf: "Moderate" };
 }
 
+// selectedFeatures may arrive as a FeatureCollection or a plain feature array
+function featureArray(selectedFeatures) {
+  if (Array.isArray(selectedFeatures)) return selectedFeatures;
+  return selectedFeatures?.features ?? [];
+}
+
+// trigger a client-side file download from a string blob
+function downloadFile(filename, mime, text) {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportGeoJSON(features, baseName) {
+  const fc = { type: "FeatureCollection", features };
+  downloadFile(
+    `${baseName}.geojson`,
+    "application/geo+json",
+    JSON.stringify(fc, null, 2),
+  );
+}
+
+function exportCSV(features, baseName) {
+  const header = ["rank", "lat", "lng", "gap_score", "equity_index"];
+  const rows = features.map((f) => {
+    const p = f.properties ?? {};
+    const [lng, lat] = f.geometry.coordinates;
+    return [
+      p.rank ?? "",
+      lat,
+      lng,
+      p.GapScore != null ? (p.GapScore * 100).toFixed(0) : "",
+      p.EquityIndex != null ? p.EquityIndex.toFixed(3) : "",
+    ].join(",");
+  });
+  const csv = [header.join(","), ...rows].join("\n");
+  downloadFile(`${baseName}.csv`, "text/csv", csv);
+}
+
 export default function ReportView({
   city, asset, budget,
   selectedFeatures, scenario, assets,
@@ -53,21 +98,87 @@ export default function ReportView({
     day: "numeric", month: "long", year: "numeric",
   });
 
-  // close on Escape
+  const features = featureArray(selectedFeatures);
+  const baseName = `city-planner_${city}_${asset}_top${budget}`;
+
+  const dialogRef = useRef(null);
+  const closeBtnRef = useRef(null);
+
+  // accessible modal: focus management, focus trap, restore on close, Escape
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const dialog = dialogRef.current;
+    const previouslyFocused = document.activeElement;
+
+    // move focus into the dialog on open
+    (closeBtnRef.current ?? dialog)?.focus();
+
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialog) return;
+
+      const focusable = dialog.querySelectorAll(
+        'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const activeInDialog = dialog.contains(document.activeElement);
+
+      if (e.shiftKey) {
+        if (document.activeElement === first || !activeInDialog) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last || !activeInDialog) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      // restore focus to the element focused before the dialog opened
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
   }, [onClose]);
 
   return (
-    <div className="report-overlay">
+    <div
+      className="report-overlay"
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="report-title"
+    >
       {/* toolbar — hidden in print */}
       <div className="report-toolbar no-print">
         <button className="report-btn" onClick={() => window.print()}>
           Print / Save PDF
         </button>
-        <button className="report-btn secondary" onClick={onClose}>
+        <button
+          className="report-btn secondary"
+          onClick={() => exportGeoJSON(features, baseName)}
+        >
+          Download GeoJSON
+        </button>
+        <button
+          className="report-btn secondary"
+          onClick={() => exportCSV(features, baseName)}
+        >
+          Download CSV
+        </button>
+        <button
+          className="report-btn secondary"
+          onClick={onClose}
+          ref={closeBtnRef}
+        >
           Close
         </button>
       </div>
@@ -77,7 +188,7 @@ export default function ReportView({
         {/* ── header ── */}
         <div className="r-header">
           <div>
-            <h1 className="r-title">City <span>Planner</span></h1>
+            <h1 id="report-title" className="r-title">City <span>Planner</span></h1>
             <p className="r-subtitle">
               Decision Brief · {cityLbl} · {assetLbl}
             </p>
@@ -131,7 +242,7 @@ export default function ReportView({
               </tr>
             </thead>
             <tbody>
-              {selectedFeatures.map((f) => {
+              {features.map((f) => {
                 const p = f.properties;
                 const [lng, lat] = f.geometry.coordinates;
                 return (

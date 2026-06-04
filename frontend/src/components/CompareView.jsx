@@ -42,12 +42,15 @@ function CoverageBar({ before, after }) {
   );
 }
 
-export default function CompareView({ initialAsset = "toilets" }) {
-  const [asset, setAsset] = useState(initialAsset);
+export default function CompareView({ asset: assetProp, onAssetChange }) {
+  const [localAsset, setLocalAsset] = useState(assetProp ?? "toilets");
+  const asset = assetProp ?? localAsset;
+  const setAsset = onAssetChange ?? setLocalAsset;
   const [reports, setReports] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;  // guard against out-of-order responses on fast switches
     setLoading(true);
     const next = {};
     Promise.all(
@@ -58,9 +61,12 @@ export default function CompareView({ initialAsset = "toilets" }) {
           .catch(() => { next[city] = null; })
       )
     ).then(() => {
+      if (cancelled) return;
       setReports({ ...next });
       setLoading(false);
     });
+
+    return () => { cancelled = true; };
   }, [asset]);
 
   return (
@@ -71,6 +77,7 @@ export default function CompareView({ initialAsset = "toilets" }) {
           <button
             key={key}
             className={`compare-asset-tab ${asset === key ? "active" : ""}`}
+            aria-pressed={asset === key}
             onClick={() => setAsset(key)}
           >
             {label}
@@ -128,9 +135,9 @@ export default function CompareView({ initialAsset = "toilets" }) {
 
               // coverage level bucket for card accent colour
               const coverageClass =
-                r.coverage_before >= 0.8  ? "ccard--high"
-                : r.coverage_before >= 0.4 ? "ccard--mid"
-                : "ccard--low";
+                r.coverage_before >= 0.8  ? "compare-card--high"
+                : r.coverage_before >= 0.4 ? "compare-card--mid"
+                : "compare-card--low";
 
               return (
                 <div key={city} className={`compare-card ${coverageClass}`}>

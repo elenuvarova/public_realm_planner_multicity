@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useEffect } from "react";
+import { useState, useRef, useLayoutEffect, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 const STEPS = [
@@ -29,10 +29,26 @@ const STEPS = [
   },
 ];
 
+// a rect is unusable if it is missing, zero-size, or entirely off-screen
+// (common on mobile where some step targets sit outside the viewport)
+function isOffScreen(rect) {
+  if (!rect) return true;
+  return (
+    rect.width === 0 ||
+    rect.right <= 0 ||
+    rect.left >= window.innerWidth ||
+    rect.bottom <= 0 ||
+    rect.top >= window.innerHeight
+  );
+}
+
 function getRect(selector) {
   if (!selector) return null;
   const el = document.querySelector(selector);
-  return el ? el.getBoundingClientRect() : null;
+  if (!el) return null;
+  const rect = el.getBoundingClientRect();
+  // treat off-screen/zero-size targets as no target → centered card, no ring
+  return isOffScreen(rect) ? null : rect;
 }
 
 const CENTERED = { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10000 };
@@ -63,6 +79,7 @@ function tooltipStyle(rect) {
 export default function Tour({ onDone }) {
   const [step, setStep] = useState(0);
   const [rect, setRect] = useState(null);
+  const cardRef = useRef(null);
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
@@ -71,12 +88,58 @@ export default function Tour({ onDone }) {
     setRect(getRect(current.target));
   }, [step, current.target]);
 
+  // capture the element focused before the tour opened; restore it on done
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    return () => {
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, []);
+
+  // move focus into the card on each step
+  useEffect(() => {
+    cardRef.current?.focus();
+  }, [step]);
+
   useEffect(() => {
     const h = () => setRect(getRect(current.target));
     const onKey = (e) => {
-      if (e.key === "Escape") onDone();
-      else if (e.key === "ArrowRight" || e.key === "Enter") next();
-      else if (e.key === "ArrowLeft") prev();
+      if (e.key === "Escape") return onDone();
+      if (e.key === "ArrowRight") return next();
+      if (e.key === "ArrowLeft") return prev();
+
+      // focus trap: keep Tab within the tour card
+      if (e.key === "Tab") {
+        const card = cardRef.current;
+        if (!card) return;
+        const focusable = card.querySelectorAll(
+          'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+        );
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const activeInCard = card.contains(document.activeElement);
+        if (e.shiftKey) {
+          if (document.activeElement === first || !activeInCard) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else if (document.activeElement === last || !activeInCard) {
+          e.preventDefault();
+          first.focus();
+        }
+        return;
+      }
+
+      // Enter advances, unless a button inside the card has focus
+      // (let that button handle its own activation instead)
+      if (e.key === "Enter") {
+        const onButton = document.activeElement?.tagName === "BUTTON";
+        if (!onButton) next();
+      }
     };
     window.addEventListener("resize", h);
     window.addEventListener("scroll", h, true);
@@ -123,6 +186,8 @@ export default function Tour({ onDone }) {
       {/* tooltip card */}
       <div
         className="tour-card"
+        ref={cardRef}
+        tabIndex={-1}
         style={tooltipStyle(rect)}
         onClick={(e) => e.stopPropagation()}
         role="dialog"

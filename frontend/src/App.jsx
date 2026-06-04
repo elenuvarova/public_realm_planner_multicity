@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import MapView from "./components/MapView";
 import ControlPanel from "./components/ControlPanel";
-import ReportView from "./components/ReportView";
-import CompareView from "./components/CompareView";
-import Tour from "./components/Tour";
-import { Loader, ErrorState } from "./components/Status";
+import { Loader, ErrorState, EmptyState } from "./components/Status";
+
+// Conditional-only views — code-split so they stay out of the initial bundle.
+const ReportView  = lazy(() => import("./components/ReportView"));
+const CompareView = lazy(() => import("./components/CompareView"));
+const Tour        = lazy(() => import("./components/Tour"));
 
 const CITY_CONFIG = {
   paris:   { center: [48.8566,  2.3522], zoom: 12, label: "Paris"   },
@@ -23,23 +25,95 @@ const ASSET_LABELS_SHORT = {
   dog_areas:        "Dog areas",
 };
 
+// ── storage helpers ──────────────────────────────────────────────────────────
+// localStorage throws in Safari Private Mode / restricted contexts; never let
+// that white-screen the app.
+function safeLocalGet(key) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+function safeLocalSet(key, value) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    /* storage unavailable — ignore */
+  }
+}
+
+// ── URL state ────────────────────────────────────────────────────────────────
+// Read once on mount. Values are validated against available data later (and
+// against the small fixed sets here) before they override the default.
+function readUrlState() {
+  let params;
+  try {
+    params = new URLSearchParams(window.location.search);
+  } catch {
+    return {};
+  }
+  const out = {};
+  const city = params.get("city");
+  const asset = params.get("asset");
+  const n = params.get("n");
+  const view = params.get("view");
+  if (city) out.city = city;
+  if (asset) out.asset = asset;
+  if (n !== null && /^\d+$/.test(n)) out.n = parseInt(n, 10);
+  if (view === "map" || view === "compare") out.view = view;
+  return out;
+}
+
+const URL_INIT = readUrlState();
+
 export default function App() {
   // ── available city/asset combos (loaded once from index.json) ──────────────
   const [available, setAvailable] = useState([]);
-  const [selection, setSelection] = useState({ city: "paris", asset: "toilets" });
+  const [indexError, setIndexError] = useState(false);
+  const [selection, setSelection] = useState({
+    city:  URL_INIT.city  ?? "paris",
+    asset: URL_INIT.asset ?? "toilets",
+  });
+  // True while the current selection came from the URL and has not yet been
+  // validated against index.json — keeps the index effect from clobbering it.
+  const urlSelectionPending = useRef(URL_INIT.city != null || URL_INIT.asset != null);
 
   useEffect(() => {
     fetch("/data/index.json")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
+        return r.json();
+      })
       .then((d) => {
         const list = d.available ?? [];
         setAvailable(list);
-        // default to Paris if present
+
+        // If the URL gave us a selection, only accept it if it exists in the
+        // data; otherwise fall back to the default selection logic.
+        const urlCombo =
+          URL_INIT.city && URL_INIT.asset
+            ? list.find((e) => e.city === URL_INIT.city && e.asset === URL_INIT.asset)
+            : null;
+
+        if (urlSelectionPending.current && urlCombo) {
+          urlSelectionPending.current = false;
+          return; // keep the URL-provided selection as-is
+        }
+        urlSelectionPending.current = false;
+
+        // No valid URL selection — default to Paris if present, else first entry.
         const paris = list.find((e) => e.city === "paris");
         if (paris) setSelection({ city: paris.city, asset: paris.asset });
         else if (list[0]) setSelection({ city: list[0].city, asset: list[0].asset });
       })
-      .catch(() => {});
+      .catch((e) => {
+        // Was silently swallowed; a fatal failure here leaves empty dropdowns and
+        // a stuck UI. Surface it non-blockingly so it's diagnosable.
+        console.warn("Failed to load /data/index.json:", e);
+        setIndexError(true);
+        urlSelectionPending.current = false;
+      });
   }, []);
 
   // ── layer visibility ───────────────────────────────────────────────────────
@@ -89,9 +163,14 @@ export default function App() {
       })
       .catch((e) => { if (!cancelled) { setError(e); setLoading(false); } });
 
-    // heavy files — loaded in background (units may be 1–10 MB)
-    fetch(`${BASE}/units.geojson`).then(ok).then((d) => !cancelled && setUnits(d)).catch(() => {});
-    fetch(`${BASE}/demand_pois.geojson`).then(ok).then((d) => !cancelled && setPois(d)).catch(() => {});
+    // heavy files — loaded in background (units may be 1–10 MB). Non-fatal, but
+    // log so silent 404s are diagnosable.
+    fetch(`${BASE}/units.geojson`).then(ok)
+      .then((d) => !cancelled && setUnits(d))
+      .catch((e) => console.warn(`units.geojson unavailable for ${city}/${asset}:`, e));
+    fetch(`${BASE}/demand_pois.geojson`).then(ok)
+      .then((d) => !cancelled && setPois(d))
+      .catch((e) => console.warn(`demand_pois.geojson unavailable for ${city}/${asset}:`, e));
 
     return () => { cancelled = true; };
   }, [selection.city, selection.asset, reloadKey]);
@@ -101,8 +180,13 @@ export default function App() {
   //  matching units/pois data for whatever layers are currently enabled.)
 
   // ── slider ────────────────────────────────────────────────────────────────
-  const maxBudget = coreData?.selected?.features?.length ?? 10;
-  const [budget, setBudget] = useState(5);
+  // Derive maxBudget defensively: the slider/coverage indexing must never run
+  // past the recommendation count or the coverage_steps array, even if a future
+  // dataset ships != 10 recommendations.
+  const recCount = coreData?.selected?.features?.length ?? 10;
+  const stepCount = coreData?.scenario?.coverage_steps?.length ?? 11;
+  const maxBudget = Math.max(0, Math.min(recCount, stepCount - 1));
+  const [budget, setBudget] = useState(URL_INIT.n ?? 5);
   // clamp budget to maxBudget when city changes
   useEffect(() => { setBudget((b) => Math.min(b, maxBudget)); }, [maxBudget]);
 
@@ -121,16 +205,33 @@ export default function App() {
   const [showReport, setShowReport] = useState(false);
 
   // ── view mode ─────────────────────────────────────────────────────────────
-  const [mode, setMode] = useState("map");  // "map" | "compare"
+  const [mode, setMode] = useState(URL_INIT.view ?? "map");  // "map" | "compare"
+
+  // ── URL write-back ─────────────────────────────────────────────────────────
+  // Mirror city/asset/budget/mode into the query string (no navigation, no new
+  // history entries) so the current view is shareable / reloadable.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      params.set("city", selection.city);
+      params.set("asset", selection.asset);
+      params.set("n", String(budget));
+      params.set("view", mode);
+      const qs = params.toString();
+      window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+    } catch {
+      /* history/URL unavailable — non-fatal */
+    }
+  }, [selection.city, selection.asset, budget, mode]);
 
   // ── mobile control-panel drawer ────────────────────────────────────────────
   const [panelOpen, setPanelOpen] = useState(false);
   useEffect(() => { setPanelOpen(false); }, [selection.city, selection.asset, mode]);
 
   // ── tour ──────────────────────────────────────────────────────────────────
-  const [showTour, setShowTour] = useState(() => !localStorage.getItem("tour_seen"));
+  const [showTour, setShowTour] = useState(() => !safeLocalGet("tour_seen"));
   const handleTourDone = () => {
-    localStorage.setItem("tour_seen", "1");
+    safeLocalSet("tour_seen", "1");
     setShowTour(false);
   };
 
@@ -212,7 +313,21 @@ export default function App() {
       </header>
 
       {mode === "compare" && (
-        <CompareView initialAsset={selection.asset} />
+        <Suspense fallback={<Loader fill message="Loading comparison…" />}>
+          <CompareView
+            asset={selection.asset}
+            onAssetChange={(a) => setSelection((s) => ({ ...s, asset: a }))}
+          />
+        </Suspense>
+      )}
+
+      {mode === "map" && indexError && !available.length && (
+        <ErrorState
+          fill
+          title="Couldn’t load the dataset index"
+          message="The list of available cities and assets failed to load. Check your connection and try again."
+          onRetry={reload}
+        />
       )}
 
       {mode === "map" && loading && (
@@ -227,7 +342,15 @@ export default function App() {
         />
       )}
 
-      {mode === "map" && !loading && !error && coreData && (
+      {mode === "map" && !loading && !error && coreData && selectedFiltered.length === 0 && (
+        <EmptyState
+          fill
+          title="No recommendations to show"
+          message={`There are no recommended locations for ${mapCfg.label} · ${ASSET_LABELS_SHORT[selection.asset] ?? selection.asset} at the current budget.`}
+        />
+      )}
+
+      {mode === "map" && !loading && !error && coreData && selectedFiltered.length > 0 && (
         <div className="app-body">
           <ControlPanel
             open={panelOpen}
@@ -270,20 +393,26 @@ export default function App() {
         </div>
       )}
 
-      {showTour && <Tour onDone={handleTourDone} />}
+      {showTour && (
+        <Suspense fallback={null}>
+          <Tour onDone={handleTourDone} />
+        </Suspense>
+      )}
 
       {showReport && coreData && (
-        <ReportView
-          city={selection.city}
-          asset={selection.asset}
-          budget={budget}
-          selectedFeatures={selectedFiltered}
-          scenario={scenario}
-          assets={coreData.assets}
-          coverageBefore={coverageBefore}
-          coverageAfter={coverageAfter}
-          onClose={() => setShowReport(false)}
-        />
+        <Suspense fallback={<Loader fill message="Preparing report…" />}>
+          <ReportView
+            city={selection.city}
+            asset={selection.asset}
+            budget={budget}
+            selectedFeatures={selectedFiltered}
+            scenario={scenario}
+            assets={coreData.assets}
+            coverageBefore={coverageBefore}
+            coverageAfter={coverageAfter}
+            onClose={() => setShowReport(false)}
+          />
+        </Suspense>
       )}
     </div>
   );

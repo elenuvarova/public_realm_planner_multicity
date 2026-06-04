@@ -67,6 +67,7 @@ export default function ControlPanel({
           value={budget}
           onChange={(e) => onBudgetChange(Number(e.target.value))}
           className="slider"
+          aria-label={`Number of new ${assetLabel} to place`}
         />
         <div className="slider-ends">
           <span>1</span>
@@ -77,10 +78,16 @@ export default function ControlPanel({
       <section className="panel-section">
         <h3>Coverage (500 m walk)</h3>
         <CoverageBar label="Before" value={coverageBefore} color="#3b82f6" />
-        <CoverageBar label="After" value={coverageAfter} color="#22c55e" />
-        {gain > 0 && (
-          <p className="gain-label">+{(gain * 100).toFixed(1)}% more demand covered</p>
-        )}
+        <div aria-live="polite" role="status">
+          <CoverageBar label="After" value={coverageAfter} color="#22c55e" />
+          {gain > 0.001 ? (
+            <p className="gain-label">+{(gain * 100).toFixed(1)}% more demand covered</p>
+          ) : (
+            <p className="gain-label" style={{ color: "var(--c-text-muted)" }}>
+              Already well covered — adding more has little effect at this budget.
+            </p>
+          )}
+        </div>
       </section>
 
       <section className="panel-section">

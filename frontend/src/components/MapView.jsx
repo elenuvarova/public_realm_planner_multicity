@@ -21,12 +21,16 @@ function escapeHtml(s) {
   );
 }
 
+// Colorblind-safe sequential ColorBrewer YlOrRd 5-class ramp.
+// Higher Score = better served = paler yellow; lower = underserved = dark red.
+const SCORE_RAMP = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
+
 function scoreColor(score) {
-  if (score < 65) return "#d73027";
-  if (score < 72) return "#f46d43";
-  if (score < 79) return "#fdae61";
-  if (score < 86) return "#a6d96a";
-  return "#1a9850";
+  if (score >= 86) return "#ffffb2";
+  if (score >= 79) return "#fecc5c";
+  if (score >= 72) return "#fd8d3c";
+  if (score >= 65) return "#f03b20";
+  return "#bd0026";
 }
 
 function unitStyle(feature) {
@@ -58,10 +62,18 @@ function rankIcon(rank) {
   });
 }
 
+function fmtScore(score) {
+  return Number.isFinite(score) ? score.toFixed(0) : "—";
+}
+
+function fmtGapPct(gap) {
+  return Number.isFinite(gap) ? (gap * 100).toFixed(0) : "—";
+}
+
 function onEachUnit(feature, layer) {
   const p = feature.properties;
   layer.bindTooltip(
-    `Score: <b>${p.Score?.toFixed(0)}</b>  Gap: ${(p.GapScore * 100).toFixed(0)}%`,
+    `Score: <b>${fmtScore(p.Score)}</b>  Gap: ${fmtGapPct(p.GapScore)}%`,
     { sticky: true, className: "unit-tooltip" }
   );
 }
@@ -75,12 +87,18 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
   })) ?? [];
 
   return (
+    <div
+      className="leaflet-map-wrap"
+      role="region"
+      aria-label={`Map of ${assetName} service-gap scores and recommended sites`}
+    >
     <MapContainer
       center={center}
       zoom={zoom}
       className="leaflet-map"
       scrollWheelZoom
       zoomControl={false}
+      preferCanvas
     >
       <ZoomControl position="bottomright" />
       <TileLayer
@@ -176,13 +194,93 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
               <Popup>
                 <b>Recommendation #{p.rank}</b>
                 <br />
-                Gap score: {(p.GapScore * 100).toFixed(0)}%
+                Gap score: {fmtGapPct(p.GapScore)}%
                 <br />
-                Equity index: {p.EquityIndex?.toFixed(2)}
+                Equity index: {Number.isFinite(p.EquityIndex) ? p.EquityIndex.toFixed(2) : "—"}
               </Popup>
             </Marker>
           );
         })}
     </MapContainer>
+
+      {/* always-visible map legend; MapView supplies all colors inline */}
+      <div className="map-legend">
+        <div className="map-legend__title">Service-gap score</div>
+        <div className="map-legend__ramp">
+          {SCORE_RAMP.map((hex) => (
+            <span
+              key={hex}
+              className="map-legend__swatch"
+              style={{ backgroundColor: hex }}
+            />
+          ))}
+        </div>
+        <div className="map-legend__scale">
+          <span>Well served</span>
+          <span>Underserved</span>
+        </div>
+        <ul className="map-legend__items">
+          <li className="map-legend__item">
+            <span
+              className="map-legend__dot"
+              style={{ backgroundColor: "#f97316" }}
+            />
+            Recommended site
+          </li>
+          <li className="map-legend__item">
+            <span
+              className="map-legend__dot"
+              style={{ backgroundColor: "#3b82f6" }}
+            />
+            Existing {assetName.toLowerCase()}
+          </li>
+          <li className="map-legend__item">
+            <span
+              className="map-legend__dot"
+              style={{ backgroundColor: "rgba(59, 130, 246, 0.18)" }}
+            />
+            500 m coverage
+          </li>
+          <li className="map-legend__item">
+            <span
+              className="map-legend__dot"
+              style={{ backgroundColor: "#8b5cf6" }}
+            />
+            Demand POI
+          </li>
+        </ul>
+      </div>
+
+      {/* text alternative to the color map for screen readers */}
+      <div
+        style={{
+          position: "absolute",
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          whiteSpace: "nowrap",
+          border: 0,
+        }}
+      >
+        <h2>Recommended sites for {assetName.toLowerCase()}, ranked by need</h2>
+        {selectedFeatures.length === 0 ? (
+          <p>No recommended sites for the current budget.</p>
+        ) : (
+          <ol>
+            {selectedFeatures.map((feature) => {
+              const p = feature.properties;
+              return (
+                <li key={p.id || p.rank}>
+                  Rank {p.rank}: gap score {fmtGapPct(p.GapScore)}%
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
+    </div>
   );
 }
