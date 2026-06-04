@@ -7,13 +7,15 @@ const isPostgres = url.startsWith("postgres://") || url.startsWith("postgresql:/
 
 export const dbKind = isPostgres ? "postgres" : "sqlite";
 
+const sslRequired = url.includes("sslmode=require") || url.includes("ssl=true");
+
 const sequelize = isPostgres
   ? new Sequelize(url, {
       dialect: "postgres",
       logging: false,
-      dialectOptions: {
-        ssl: { require: true, rejectUnauthorized: false },
-      },
+      dialectOptions: sslRequired
+        ? { ssl: { require: true, rejectUnauthorized: false } }
+        : {},
     })
   : new Sequelize({
       dialect: "sqlite",
