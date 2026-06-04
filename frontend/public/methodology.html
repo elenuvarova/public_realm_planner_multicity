@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Methodology — City Planner</title>
+    <meta
+      name="description"
+      content="How City Planner scores service gaps: the TES formula, walking-network gap scores, an equity index from census deprivation, greedy near-optimal selection, per-city data sources, and honest limitations."
+    />
+    <meta name="theme-color" content="#0f172a" />
+
+    <link rel="canonical" href="https://city-planner.ontwrpn.com/methodology.html" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="article" />
+    <meta property="og:title"       content="Methodology — City Planner" />
+    <meta property="og:description" content="How City Planner scores service gaps and selects locations: TES = 100 × (1 − GapScore × EquityIndex), walking-network distances, census deprivation, and greedy near-optimal selection." />
+    <meta property="og:url"         content="https://city-planner.ontwrpn.com/methodology.html" />
+    <meta property="og:image"       content="https://city-planner.ontwrpn.com/og.png" />
+    <!-- Twitter -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="Methodology — City Planner" />
+    <meta name="twitter:description" content="The scoring and selection method behind City Planner, with data sources and honest limitations." />
+    <meta name="twitter:image"       content="https://city-planner.ontwrpn.com/og.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900&display=swap" rel="stylesheet" />
+
+    <style>
+      :root {
+        --c-ink:   #0f172a;
+        --c-ink-2: #1e293b;
+        --c-ink-3: #334155;
+        --c-brand: #f97316;
+        --c-on-ink: #f8fafc;
+        --c-on-ink-muted: #cbd5e1;
+        --c-on-ink-subtle: #94a3b8;
+        --c-border: #1e293b;
+        --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { -webkit-text-size-adjust: 100%; }
+
+      body {
+        margin: 0;
+        background: var(--c-ink);
+        color: var(--c-on-ink-muted);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a { color: var(--c-brand); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 40px 24px 96px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 48px;
+      }
+      .topbar svg { display: block; }
+      .topbar__brand {
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--c-on-ink);
+        letter-spacing: -0.01em;
+      }
+      .topbar__back {
+        margin-left: auto;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--c-on-ink-subtle);
+      }
+      .topbar__back:hover { color: var(--c-brand); text-decoration: none; }
+
+      h1 {
+        color: var(--c-on-ink);
+        font-size: 2.25rem;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        margin: 0 0 12px;
+      }
+      .lede {
+        font-size: 1.125rem;
+        color: var(--c-on-ink-muted);
+        margin: 0 0 40px;
+        line-height: 1.6;
+      }
+
+      h2 {
+        color: var(--c-on-ink);
+        font-size: 1.375rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin: 48px 0 12px;
+        padding-top: 8px;
+        border-top: 1px solid var(--c-border);
+      }
+      h2:first-of-type { border-top: none; }
+
+      h3 {
+        color: var(--c-on-ink);
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 28px 0 6px;
+      }
+
+      p { margin: 0 0 16px; }
+
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+        background: var(--c-ink-2);
+        color: var(--c-on-ink);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      .formula {
+        background: var(--c-ink-2);
+        border: 1px solid var(--c-border);
+        border-radius: 10px;
+        padding: 20px 24px;
+        margin: 0 0 24px;
+        font-family: var(--font-mono);
+        font-size: 1.05rem;
+        color: var(--c-on-ink);
+        text-align: center;
+        overflow-x: auto;
+      }
+      .formula small {
+        display: block;
+        margin-top: 8px;
+        font-family: var(--font-sans);
+        font-size: 0.8125rem;
+        color: var(--c-on-ink-subtle);
+      }
+
+      ul { margin: 0 0 16px; padding-left: 22px; }
+      li { margin-bottom: 8px; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0 0 24px;
+        font-size: 0.9375rem;
+      }
+      th, td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--c-border);
+        vertical-align: top;
+      }
+      th {
+        color: var(--c-on-ink);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--c-on-ink-subtle);
+      }
+      td { color: var(--c-on-ink-muted); }
+
+      .note {
+        border-left: 3px solid var(--c-brand);
+        background: var(--c-ink-2);
+        border-radius: 0 8px 8px 0;
+        padding: 14px 18px;
+        margin: 0 0 24px;
+        font-size: 0.9375rem;
+        color: var(--c-on-ink-muted);
+      }
+
+      .ramp {
+        display: flex;
+        margin: 8px 0 8px;
+        border-radius: 6px;
+        overflow: hidden;
+        height: 16px;
+        max-width: 320px;
+      }
+      .ramp span { flex: 1; }
+      .ramp-scale {
+        display: flex;
+        justify-content: space-between;
+        max-width: 320px;
+        font-size: 0.75rem;
+        color: var(--c-on-ink-subtle);
+        margin-bottom: 24px;
+      }
+
+      footer {
+        margin-top: 56px;
+        padding-top: 24px;
+        border-top: 1px solid var(--c-border);
+        font-size: 0.875rem;
+        color: var(--c-on-ink-subtle);
+      }
+      footer a { font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <div class="topbar">
+        <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7" fill="#0f172a" stroke="#1e293b" />
+          <polygon points="16,5 24.66,10 24.66,22 16,27 7.34,22 7.34,10" fill="#f97316" />
+          <circle cx="16" cy="16" r="4" fill="#0f172a" />
+        </svg>
+        <span class="topbar__brand">City Planner</span>
+        <a class="topbar__back" href="/">← Open the planner</a>
+      </div>
+
+      <h1>Methodology</h1>
+      <p class="lede">
+        City Planner ranks where a city should add public infrastructure — toilets, benches,
+        bike parking, drinking water and more — by combining how far people have to walk to the
+        nearest existing asset with how disadvantaged the surrounding area is. This page explains
+        exactly how the numbers are produced, what data sits behind them, and where the method falls
+        short.
+      </p>
+
+      <h2>The score: Total Equity Score (TES)</h2>
+      <p>
+        Every analysis unit (a small neighbourhood cell) gets a Total Equity Score from 0 to 100.
+        A higher Score means the area is <strong>better served</strong> — the gap is small.
+        A lower Score means it is <strong>underserved</strong> and higher-need.
+      </p>
+      <div class="formula">
+        TES = 100 × (1 − GapScore × EquityIndex)
+        <small>GapScore and EquityIndex are each normalised to the 0–1 range within a city.</small>
+      </div>
+      <p>
+        Because <code>GapScore</code> and <code>EquityIndex</code> are multiplied, a unit only scores
+        badly when it is <em>both</em> poorly served and disadvantaged. A well-off area with a long
+        walk to the nearest bench, or a deprived area that already has good coverage, both land in the
+        middle of the scale. The places that rise to the top of the priority list are the ones where
+        need and gap coincide.
+      </p>
+
+      <div class="ramp" aria-hidden="true">
+        <span style="background:#ffffb2"></span>
+        <span style="background:#fecc5c"></span>
+        <span style="background:#fd8d3c"></span>
+        <span style="background:#f03b20"></span>
+        <span style="background:#bd0026"></span>
+      </div>
+      <div class="ramp-scale" aria-hidden="true">
+        <span>Well served</span>
+        <span>Underserved</span>
+      </div>
+
+      <h2>GapScore — walking-network distance</h2>
+      <p>
+        GapScore measures how far residents actually have to walk to reach the nearest existing asset
+        of the chosen type. Distances are computed over the real pedestrian network — streets, paths
+        and crossings drawn from OpenStreetMap — using a shortest-path (Dijkstra) search, not a
+        straight-line "as the crow flies" radius. Walking around a rail line, a river or a motorway is
+        counted, so the gap reflects the trip a person would really make.
+      </p>
+      <p>
+        The resulting walking distance for each unit is normalised to 0–1 across the city: the unit
+        with the worst access sits near 1, the best-covered unit near 0.
+      </p>
+
+      <h2>EquityIndex — who is affected</h2>
+      <p>
+        EquityIndex weights the gap by how much it matters. It blends two ingredients per unit —
+        local socioeconomic deprivation and demand density (how many people or points of interest are
+        nearby) — and rescales the result so that the least disadvantaged areas keep a small but
+        non-zero weight:
+      </p>
+      <div class="formula">
+        EquityIndex = 0.1 + 0.9 × mean(deprivation, demand&nbsp;density)
+        <small>Both inputs are normalised 0–1 within the city before averaging.</small>
+      </div>
+      <p>
+        The <code>0.1</code> floor means even comfortable, busy areas are never treated as worth
+        zero — a gap there still counts, just less. The <code>0.9</code> span lets the most deprived,
+        most-used areas carry close to full weight.
+      </p>
+
+      <h2>Selecting locations — greedy near-optimal</h2>
+      <p>
+        Once every unit is scored, City Planner chooses a budget of <em>n</em> new locations that
+        reduce the total weighted gap the most. It does this greedily: it repeatedly adds the single
+        candidate location that delivers the largest remaining improvement, then re-evaluates, because
+        placing one new asset changes the gap for every nearby unit.
+      </p>
+      <p>
+        The objective is <strong>submodular</strong> (each additional asset helps a little less than
+        the last), and for that class of problem the classic result of Nemhauser, Wolsey &amp; Fisher
+        (1978) guarantees the greedy selection reaches at least <strong>1 − 1/e ≈ 63%</strong> of the
+        best possible improvement of any selection of the same size. In practice it usually does far
+        better; the guarantee is a worst-case floor, and it lets the tool stay fast and interactive
+        instead of solving an intractable exact optimisation.
+      </p>
+
+      <h2>Deprivation data, per city</h2>
+      <p>
+        Deprivation is the one input that has to come from each country's own statistics, so the
+        source and vintage differ by city. The tool normalises each source within its own city, so
+        scores are <strong>relative within a city</strong> and should not be compared one-to-one across
+        cities.
+      </p>
+      <table>
+        <thead>
+          <tr><th>City</th><th>Deprivation source</th><th>Vintage</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Paris</td>
+            <td>INSEE FILOSOFI (localised disposable-income / poverty indicators)</td>
+            <td>2019</td>
+          </tr>
+          <tr>
+            <td>Antwerp</td>
+            <td>Statbel BIMD (Belgian Index of Multiple Deprivation)</td>
+            <td>2011 — noticeably older than the others; treat with extra caution</td>
+          </tr>
+          <tr>
+            <td>London</td>
+            <td>ONS Index of Multiple Deprivation (IMD)</td>
+            <td>2019</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        Antwerp's deprivation layer dates from 2011. Neighbourhoods can change a great deal in a
+        decade, so Antwerp results carry more uncertainty than Paris or London and should be read as
+        indicative rather than current.
+      </div>
+
+      <h2>Asset &amp; network data</h2>
+      <p>
+        Existing assets (the toilets, benches, bins, water points and so on already on the ground) and
+        the pedestrian network both come from <strong>OpenStreetMap</strong>, used under the Open
+        Database License (ODbL). OSM is community-maintained and richly detailed in city centres.
+      </p>
+
+      <h2>Limitations — read these before you act on a result</h2>
+      <ul>
+        <li>
+          <strong>City-relative normalisation.</strong> Scores are scaled within each city. A Score of
+          70 in Paris and a Score of 70 in London do not represent the same absolute level of service —
+          only the same relative position within that city.
+        </li>
+        <li>
+          <strong>OSM under-mapping in the periphery.</strong> OpenStreetMap coverage is densest in
+          central, well-trafficked districts. Outer and less-mapped areas may show artificial gaps
+          simply because existing assets there were never recorded, not because they are missing on the
+          ground.
+        </li>
+        <li>
+          <strong>±50–100 m snapping error.</strong> Assets and demand points are snapped to the
+          nearest network node, introducing roughly 50–100 m of positional error. At the scale of a
+          single street corner the ranking can wobble; treat the unit, not the exact metre, as the unit
+          of confidence.
+        </li>
+        <li>
+          <strong>Static snapshot.</strong> Each analysis reflects one extract of OSM and one vintage of
+          deprivation data. It is a decision aid, not a live feed, and not a substitute for local
+          knowledge or a site visit.
+        </li>
+      </ul>
+
+      <footer>
+        City Planner is a research and decision-support prototype. Data: OpenStreetMap (ODbL); INSEE,
+        Statbel and ONS for deprivation. <a href="/">← Open the planner</a>
+      </footer>
+    </main>
+  </body>
+</html>

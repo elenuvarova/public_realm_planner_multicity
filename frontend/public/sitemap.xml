@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://city-planner.ontwrpn.com/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://city-planner.ontwrpn.com/methodology.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Paris -->
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=toilets</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=benches</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=waste_bins</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=drinking_water</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=fitness_stations</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=bike_parking</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=defibrillators</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=paris&amp;asset=dog_areas</loc><priority>0.6</priority></url>
+
+  <!-- Antwerp -->
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=toilets</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=benches</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=waste_bins</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=drinking_water</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=fitness_stations</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=bike_parking</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=defibrillators</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=antwerp&amp;asset=dog_areas</loc><priority>0.6</priority></url>
+
+  <!-- London -->
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=toilets</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=benches</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=waste_bins</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=drinking_water</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=fitness_stations</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=bike_parking</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=defibrillators</loc><priority>0.6</priority></url>
+  <url><loc>https://city-planner.ontwrpn.com/?city=london&amp;asset=dog_areas</loc><priority>0.6</priority></url>
+</urlset>

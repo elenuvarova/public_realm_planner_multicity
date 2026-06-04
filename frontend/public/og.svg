@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <!-- single flat-top hexagon cell for the background grid motif -->
+    <pattern id="hexgrid" width="120" height="104" patternUnits="userSpaceOnUse" patternTransform="translate(-30 -20)">
+      <polygon points="60,4 112,34 112,94 60,124 8,94 8,34"
+               fill="none" stroke="#1e293b" stroke-width="1.5" />
+      <polygon points="0,-48 52,-18 52,42 0,72 -52,42 -52,-18"
+               fill="none" stroke="#1e293b" stroke-width="1.5" />
+      <polygon points="120,-48 172,-18 172,42 120,72 68,42 68,-18"
+               fill="none" stroke="#1e293b" stroke-width="1.5" />
+    </pattern>
+    <linearGradient id="fade" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"  stop-color="#0f172a" stop-opacity="0" />
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.85" />
+    </linearGradient>
+  </defs>
+
+  <!-- dark navy background -->
+  <rect width="1200" height="630" fill="#0f172a" />
+
+  <!-- subtle hex-grid motif -->
+  <rect width="1200" height="630" fill="url(#hexgrid)" opacity="0.55" />
+  <rect width="1200" height="630" fill="url(#fade)" />
+
+  <!-- brand hexagon mark (reuses favicon motif: orange hex + navy core) -->
+  <g transform="translate(140 150)">
+    <rect x="-26" y="-26" width="172" height="172" rx="34" fill="#0f172a" />
+    <polygon points="60,18 99.6,41 99.6,87 60,110 20.4,87 20.4,41" fill="#f97316" />
+    <circle cx="60" cy="64" r="18" fill="#0f172a" />
+  </g>
+
+  <!-- wordmark beside the hex -->
+  <text x="300" y="226" font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="44" font-weight="700" fill="#f8fafc" letter-spacing="-0.5">City Planner</text>
+
+  <!-- large title -->
+  <text x="140" y="378" font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="92" font-weight="800" fill="#f8fafc" letter-spacing="-2.5">City Planner</text>
+
+  <!-- subtitle -->
+  <text x="142" y="452" font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="34" font-weight="500" fill="#cbd5e1">Find optimal locations for public infrastructure</text>
+  <text x="142" y="500" font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="34" font-weight="600" fill="#f97316">Paris  ·  Antwerp  ·  London</text>
+
+  <!-- footer url -->
+  <text x="142" y="575" font-family="Inter, 'Helvetica Neue', Arial, sans-serif"
+        font-size="24" font-weight="500" fill="#64748b">city-planner.ontwrpn.com</text>
+</svg>

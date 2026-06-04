@@ -1,0 +1,18 @@
+{
+  "name": "City Planner",
+  "short_name": "City Planner",
+  "description": "Find optimal locations for public infrastructure across Paris, Antwerp and London.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ]
+}
