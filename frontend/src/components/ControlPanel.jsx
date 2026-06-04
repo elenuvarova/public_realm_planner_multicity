@@ -40,6 +40,12 @@ export default function ControlPanel({
   onReportOpen,
   asset,
   dataReady = {},
+  planMode = false,
+  onTogglePlan,
+  gridReady = false,
+  gapEstimate = { reached: 0, total: 0, pct: 0 },
+  userSiteCount = 0,
+  onClearSites,
 }) {
   const gain = coverageAfter - coverageBefore;
   const meta = scenario?.meta ?? {};
@@ -135,6 +141,40 @@ export default function ControlPanel({
             </label>
           );
         })}
+      </section>
+
+      <section className="panel-section">
+        <h3>What-if planner</h3>
+        <button
+          className={`plan-btn ${planMode ? "plan-btn--active" : ""}`}
+          onClick={onTogglePlan}
+          disabled={!gridReady}
+          aria-pressed={planMode}
+        >
+          {planMode ? "✓ Done placing" : "✎ Place your own sites"}
+        </button>
+
+        {!gridReady ? (
+          <p className="plan-hint">Loading the score grid…</p>
+        ) : planMode ? (
+          <p className="plan-hint">Click the map to drop a candidate · click a pin to remove it.</p>
+        ) : null}
+
+        <div className="plan-readout" aria-live="polite">
+          <span className="plan-pct">{(gapEstimate.pct * 100).toFixed(0)}%</span>
+          <span className="plan-pct-label">of the service gap within reach</span>
+        </div>
+        <p className="plan-sub">
+          {gapEstimate.reached.toLocaleString()} of {gapEstimate.total.toLocaleString()} underserved
+          cells · {userSiteCount} of your sites
+        </p>
+        {userSiteCount > 0 && (
+          <button className="plan-clear" onClick={onClearSites}>Clear my sites</button>
+        )}
+        <p className="plan-caveat">
+          Straight-line estimate — approximates walking reach. The headline coverage above uses the
+          full walking network.
+        </p>
       </section>
 
       <section className="panel-section note panel-section--footer">

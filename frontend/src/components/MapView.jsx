@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { MapContainer, TileLayer, GeoJSON, Circle, Marker, Popup, Tooltip, ZoomControl } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Circle, Marker, Popup, Tooltip, ZoomControl, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { SCORE_RAMP, MAP_COLORS, scoreColor } from "../mapColors";
+import { REACH_M } from "../lib/scenario";
 
 const SERVICE_RADIUS_M = 500;
 
@@ -52,6 +53,23 @@ function rankIcon(rank) {
   });
 }
 
+const userSiteIcon = L.divIcon({
+  html: `<div class="user-site-marker">+</div>`,
+  className: "",
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+});
+
+// Adds a user candidate site wherever the map background is clicked (plan mode).
+function PlanClicks({ enabled, onAdd }) {
+  useMapEvents({
+    click(e) {
+      if (enabled) onAdd(e.latlng.lng, e.latlng.lat);
+    },
+  });
+  return null;
+}
+
 function fmtScore(score) {
   return Number.isFinite(score) ? score.toFixed(0) : "—";
 }
@@ -68,7 +86,10 @@ function onEachUnit(feature, layer) {
   );
 }
 
-export default function MapView({ center, zoom = 12, units, assets, selectedFeatures, pois, layers, asset }) {
+export default function MapView({
+  center, zoom = 12, units, assets, selectedFeatures, pois, layers, asset,
+  planMode = false, userSites = [], onAddSite, onRemoveSite,
+}) {
   const assetName = ASSET_SINGULAR[asset] ?? "Facility";
   const [legendOpen, setLegendOpen] = useState(false);
   const assetCoords = assets?.features?.map((f) => ({
@@ -79,7 +100,7 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
 
   return (
     <div
-      className="leaflet-map-wrap"
+      className={`leaflet-map-wrap ${planMode ? "leaflet-map-wrap--plan" : ""}`}
       role="region"
       aria-label={`Map of ${assetName} service-gap scores and recommended sites`}
     >
@@ -92,6 +113,7 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
       preferCanvas
     >
       <ZoomControl position="bottomright" />
+      <PlanClicks enabled={planMode} onAdd={onAddSite} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
@@ -192,6 +214,33 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
             </Marker>
           );
         })}
+
+      {/* what-if planner: user-placed candidate sites + their straight-line reach */}
+      {userSites.map((s) => (
+        <Circle
+          key={`reach-${s.id}`}
+          center={[s.lat, s.lng]}
+          radius={REACH_M}
+          interactive={false}
+          pathOptions={{
+            color: MAP_COLORS.recommended,
+            weight: 1,
+            dashArray: "4 3",
+            fillColor: MAP_COLORS.recommended,
+            fillOpacity: 0.1,
+          }}
+        />
+      ))}
+      {userSites.map((s) => (
+        <Marker
+          key={`site-${s.id}`}
+          position={[s.lat, s.lng]}
+          icon={userSiteIcon}
+          eventHandlers={{ click: () => onRemoveSite && onRemoveSite(s.id) }}
+        >
+          <Tooltip direction="top" offset={[0, -10]}>Click to remove</Tooltip>
+        </Marker>
+      ))}
     </MapContainer>
 
       {/* collapsible map legend; MapView supplies all colors inline.

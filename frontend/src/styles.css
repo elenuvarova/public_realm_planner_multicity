@@ -462,6 +462,74 @@ button {
   margin-bottom: 0 !important;
 }
 
+/* what-if planner panel section */
+.plan-btn {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface-2);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.plan-btn:hover:not(:disabled) { border-color: var(--c-brand); }
+.plan-btn:disabled { opacity: 0.5; cursor: default; }
+.plan-btn--active {
+  background: var(--c-brand-soft);
+  border-color: var(--c-brand);
+  color: var(--c-brand);
+}
+
+.plan-hint {
+  font-size: var(--fs-2xs);
+  color: var(--c-text-muted);
+  margin-top: var(--sp-1_5);
+}
+
+.plan-readout {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2_5);
+}
+.plan-pct {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-extrabold);
+  color: var(--c-brand);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+}
+.plan-pct-label {
+  font-size: var(--fs-2xs);
+  color: var(--c-text-muted);
+}
+.plan-sub {
+  font-size: var(--fs-2xs);
+  color: var(--c-text-muted);
+  margin-top: var(--sp-1);
+}
+.plan-clear {
+  margin-top: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2_5);
+  background: none;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-2xs);
+  color: var(--c-text-muted);
+  cursor: pointer;
+}
+.plan-clear:hover { border-color: var(--c-text-muted); color: var(--c-text); }
+.plan-caveat {
+  font-size: var(--fs-2xs);
+  color: var(--c-text-subtle);
+  margin-top: var(--sp-2);
+  line-height: var(--lh-snug);
+}
+
 /* report CTA */
 .report-cta {
   width: 100%;
@@ -525,6 +593,25 @@ button {
   from { transform: scale(0); opacity: 0; }
   to   { transform: scale(1); opacity: 1; }
 }
+
+/* what-if planner: user-placed candidate site marker + plan-mode cursor */
+.user-site-marker {
+  width: 24px;
+  height: 24px;
+  background: var(--c-surface);
+  border: 2px dashed var(--c-brand);
+  color: var(--c-brand);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-base);
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+.leaflet-map-wrap--plan .leaflet-container { cursor: crosshair; }
 
 .unit-tooltip {
   font-size: var(--fs-xs);

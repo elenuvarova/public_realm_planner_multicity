@@ -3,7 +3,7 @@ import MapView from "./components/MapView";
 import ControlPanel from "./components/ControlPanel";
 import { Loader, ErrorState, EmptyState } from "./components/Status";
 import { IconHelp, IconMenu } from "./components/Icons";
-import { selectByBudget, coverageAt } from "./lib/scenario";
+import { selectByBudget, coverageAt, underservedCentroids, gapClosure, REACH_M } from "./lib/scenario";
 
 // Conditional-only views — code-split so they stay out of the initial bundle.
 const ReportView  = lazy(() => import("./components/ReportView"));
@@ -230,6 +230,30 @@ export default function App() {
   const [panelOpen, setPanelOpen] = useState(false);
   useEffect(() => { setPanelOpen(false); }, [selection.city, selection.asset, mode]);
 
+  // ── what-if planner ─────────────────────────────────────────────────────────
+  // Drop extra candidate sites and see how much more of the service gap they'd
+  // close (straight-line estimate; see lib/scenario.js for the honesty caveats).
+  const [planMode, setPlanMode] = useState(false);
+  const [userSites, setUserSites] = useState([]); // [{ id, lng, lat }]
+  const siteId = useRef(0);
+  useEffect(() => { setUserSites([]); setPlanMode(false); }, [selection.city, selection.asset]);
+
+  const addUserSite = (lng, lat) =>
+    setUserSites((s) => [...s, { id: ++siteId.current, lng, lat }]);
+  const removeUserSite = (id) => setUserSites((s) => s.filter((p) => p.id !== id));
+
+  const underserved = useMemo(
+    () => underservedCentroids(units?.features),
+    [units]
+  );
+  const gapEstimate = useMemo(() => {
+    const sites = [
+      ...selectedFiltered.map((f) => f.geometry.coordinates),
+      ...userSites.map((p) => [p.lng, p.lat]),
+    ];
+    return gapClosure(underserved, sites, REACH_M);
+  }, [underserved, selectedFiltered, userSites]);
+
   // ── tour ──────────────────────────────────────────────────────────────────
   const [showTour, setShowTour] = useState(() => !safeLocalGet("tour_seen"));
   const handleTourDone = () => {
@@ -369,6 +393,12 @@ export default function App() {
             onReportOpen={() => setShowReport(true)}
             asset={selection.asset}
             dataReady={{ units: !!units, pois: !!pois }}
+            planMode={planMode}
+            onTogglePlan={() => setPlanMode((p) => !p)}
+            gridReady={!!units}
+            gapEstimate={gapEstimate}
+            userSiteCount={userSites.length}
+            onClearSites={() => setUserSites([])}
           />
           {panelOpen && (
             <button
@@ -387,6 +417,10 @@ export default function App() {
             pois={pois}
             layers={layers}
             asset={selection.asset}
+            planMode={planMode}
+            userSites={userSites}
+            onAddSite={addUserSite}
+            onRemoveSite={removeUserSite}
           />
           <button
             className="panel-toggle"
