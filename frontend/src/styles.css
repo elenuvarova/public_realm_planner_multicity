@@ -299,6 +299,7 @@ button {
   padding: var(--sp-3_5) var(--sp-4);
   border-bottom: 1px solid var(--c-border-soft);
   flex-shrink: 0;
+  animation: fadeIn 0.25s ease both;
 }
 
 /* pinned to the bottom of the panel when there's spare height (Figma "fill") */
@@ -470,6 +471,12 @@ button {
 .leaflet-map {
   flex: 1;
   height: 100%;
+  animation: fadeIn 0.35s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .rank-marker {
@@ -486,6 +493,12 @@ button {
   font-size: var(--fs-xs);
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
   cursor: pointer;
+  animation: markerPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes markerPop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
 }
 
 .unit-tooltip {
@@ -674,24 +687,28 @@ button {
   justify-content: space-between;
   align-items: flex-start;
   gap: var(--sp-4);
-  padding-bottom: var(--sp-3_5);
-  border-bottom: 2px solid var(--c-ink);
-  margin-bottom: var(--sp-5);
+  padding-bottom: var(--sp-4);
+  border-bottom: 3px solid var(--c-ink);
+  margin-bottom: var(--sp-6);
 }
 
 .r-title {
-  font-size: var(--fs-xl);
+  font-size: var(--fs-2xl);
   font-weight: var(--fw-extrabold);
   color: var(--c-ink);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
   line-height: var(--lh-tight);
 }
 
+.r-title span {
+  color: var(--c-brand);
+}
+
 .r-subtitle {
-  font-size: var(--fs-sm);
+  font-size: var(--fs-base);
   color: var(--c-text-muted);
-  margin-top: var(--sp-0_5);
+  margin-top: var(--sp-1);
+  font-weight: var(--fw-medium);
 }
 
 .r-date {
@@ -701,26 +718,28 @@ button {
   padding-top: var(--sp-1);
 }
 
-.r-section { margin-bottom: var(--sp-5); }
+.r-section { margin-bottom: var(--sp-6); }
 
 .r-section h2 {
   font-size: var(--fs-xs);
   font-weight: var(--fw-bold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wider);
-  color: var(--c-text-muted);
-  margin-bottom: var(--sp-1_5);
-  border-bottom: 1px solid var(--c-border-soft);
-  padding-bottom: var(--sp-1);
+  color: var(--c-text-subtle);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--c-border);
+  padding-bottom: var(--sp-1_5);
 }
 
 .r-section p { margin-bottom: var(--sp-1_5); }
 
 .r-highlight {
-  background: var(--c-surface-2);
-  border-left: 3px solid var(--c-brand);
-  padding: var(--sp-2_5) var(--sp-3_5);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--c-brand-soft);
+  border-left: 4px solid var(--c-brand);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  font-size: var(--fs-base);
+  line-height: var(--lh-relaxed);
 }
 
 .r-gain { color: var(--c-success); font-weight: var(--fw-bold); }
@@ -1130,10 +1149,17 @@ button {
     gap: var(--sp-3);
   }
   .header-actions { margin-left: auto; order: 0; }
-  .app-header h1 { font-size: var(--fs-sm); }
+  .app-header h1 { font-size: var(--fs-base); }
   .header-selectors { gap: var(--sp-3); width: 100%; }
   .header-select-label { flex: 1; }
-  .header-select { flex: 1; min-width: 0; }
+  .header-select { flex: 1; min-width: 0; height: 36px; }
+
+  /* larger touch targets */
+  .mode-btn { padding: var(--sp-2) var(--sp-3); min-height: 36px; }
+  .header-icon-btn { width: 36px; height: 36px; }
+  .layer-toggle { padding: var(--sp-2) 0; }
+  .layer-toggle input[type="checkbox"] { width: 18px; height: 18px; }
+  .report-cta { padding: var(--sp-3) var(--sp-4); font-size: var(--fs-base); }
 
   .control-panel {
     position: absolute;
@@ -1179,6 +1205,18 @@ button {
 
   .compare-body { padding: var(--sp-4) var(--sp-4) var(--sp-8); }
   .compare-norm-banner { flex-direction: column; gap: var(--sp-1_5); }
+
+  .panel-toggle {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: var(--sp-4);
+    padding: var(--sp-2_5) var(--sp-5);
+    font-size: var(--fs-base);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .compare-asset-tabs { padding: var(--sp-2) var(--sp-3); gap: var(--sp-1_5); }
+  .ccard-big { font-size: var(--fs-2xl); }
 }
 
 /* very narrow: let the mode toggle + actions share a row tidily */

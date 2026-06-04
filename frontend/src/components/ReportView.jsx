@@ -77,7 +77,7 @@ export default function ReportView({
         {/* ── header ── */}
         <div className="r-header">
           <div>
-            <h1 className="r-title">City Planner</h1>
+            <h1 className="r-title">City <span>Planner</span></h1>
             <p className="r-subtitle">
               Decision Brief · {cityLbl} · {assetLbl}
             </p>
