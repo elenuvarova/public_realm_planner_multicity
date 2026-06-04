@@ -1,1 +1,1 @@
-{"meta":{"city":"paris","asset":"bike_parking","service_radius_m":500,"n_demand_cells":1118,"n_existing_assets":10924,"n_candidates_pool":110},"coverage_steps":[0.9882,0.9897,0.9912,0.9926,0.994,0.995,0.996,0.9968,0.9974,0.9978,0.9983]}
+{"meta": {"city": "paris", "asset": "bike_parking", "service_radius_m": 500.0, "n_demand_cells": 1118, "n_existing_assets": 10924, "n_candidates_pool": 110, "deprivation_source": "real", "deprivation_zones_joined": 645}, "coverage_steps": [0.9695, 0.9716, 0.9735, 0.9753, 0.9769, 0.9785, 0.9799, 0.9814, 0.9828, 0.9839, 0.985]}

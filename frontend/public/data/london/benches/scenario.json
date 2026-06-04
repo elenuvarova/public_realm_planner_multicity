@@ -1,1 +1,1 @@
-{"meta":{"city":"london","asset":"benches","service_radius_m":500,"n_demand_cells":16889,"n_existing_assets":20841,"n_candidates_pool":6031},"coverage_steps":[0.7182,0.7189,0.7195,0.7202,0.7208,0.7214,0.722,0.7226,0.7232,0.7238,0.7244]}
+{"meta": {"city": "london", "asset": "benches", "service_radius_m": 500.0, "n_demand_cells": 16889, "n_existing_assets": 20841, "n_candidates_pool": 6031, "deprivation_source": "real", "deprivation_zones_joined": 5666}, "coverage_steps": [0.5278, 0.5285, 0.5293, 0.53, 0.5307, 0.5313, 0.532, 0.5326, 0.5333, 0.5339, 0.5345]}

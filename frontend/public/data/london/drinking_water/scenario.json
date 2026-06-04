@@ -1,1 +1,1 @@
-{"meta":{"city":"london","asset":"drinking_water","service_radius_m":500,"n_demand_cells":16889,"n_existing_assets":517,"n_candidates_pool":6670},"coverage_steps":[0.2078,0.2088,0.2097,0.2106,0.2115,0.2123,0.2132,0.214,0.2149,0.2157,0.2165]}
+{"meta": {"city": "london", "asset": "drinking_water", "service_radius_m": 500.0, "n_demand_cells": 16889, "n_existing_assets": 517, "n_candidates_pool": 6670, "deprivation_source": "real", "deprivation_zones_joined": 5666}, "coverage_steps": [0.1114, 0.1125, 0.1136, 0.1146, 0.1156, 0.1166, 0.1175, 0.1185, 0.1194, 0.1204, 0.1212]}

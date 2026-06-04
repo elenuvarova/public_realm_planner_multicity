@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"dog_areas","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":74,"n_candidates_pool":1614},"coverage_steps":[0.3241,0.3358,0.3462,0.3549,0.3632,0.3711,0.3787,0.3857,0.3922,0.3986,0.4049]}
+{"meta": {"city": "antwerp", "asset": "dog_areas", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 74, "n_candidates_pool": 1614, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.1728, 0.1848, 0.1952, 0.2052, 0.2142, 0.2229, 0.2308, 0.2387, 0.246, 0.2533, 0.2604]}

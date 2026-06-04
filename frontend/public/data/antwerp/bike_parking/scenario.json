@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"bike_parking","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":1604,"n_candidates_pool":1082},"coverage_steps":[0.6438,0.6485,0.6531,0.6571,0.6609,0.6645,0.6677,0.6709,0.6738,0.6765,0.6791]}
+{"meta": {"city": "antwerp", "asset": "bike_parking", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 1604, "n_candidates_pool": 1082, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.5687, 0.5739, 0.5786, 0.5832, 0.5875, 0.5915, 0.595, 0.5983, 0.6016, 0.6047, 0.6078]}

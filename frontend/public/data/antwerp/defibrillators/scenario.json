@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"defibrillators","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":250,"n_candidates_pool":1201},"coverage_steps":[0.5811,0.5872,0.592,0.5963,0.6004,0.6043,0.6081,0.6118,0.6153,0.6187,0.6219]}
+{"meta": {"city": "antwerp", "asset": "defibrillators", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 250, "n_candidates_pool": 1201, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.411, 0.4183, 0.4254, 0.4309, 0.4363, 0.4416, 0.447, 0.4522, 0.4572, 0.4622, 0.467]}

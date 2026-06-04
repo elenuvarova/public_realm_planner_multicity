@@ -1,1 +1,1 @@
-{"meta":{"city":"paris","asset":"defibrillators","service_radius_m":500,"n_demand_cells":1118,"n_existing_assets":802,"n_candidates_pool":306},"coverage_steps":[0.9491,0.9534,0.9558,0.9579,0.9599,0.9618,0.9637,0.9655,0.9671,0.9688,0.9704]}
+{"meta": {"city": "paris", "asset": "defibrillators", "service_radius_m": 500.0, "n_demand_cells": 1118, "n_existing_assets": 802, "n_candidates_pool": 306, "deprivation_source": "real", "deprivation_zones_joined": 645}, "coverage_steps": [0.8531, 0.8582, 0.8629, 0.8676, 0.8723, 0.8768, 0.8813, 0.8853, 0.8893, 0.8932, 0.897]}

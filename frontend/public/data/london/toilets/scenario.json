@@ -1,1 +1,1 @@
-{"meta":{"city":"london","asset":"toilets","service_radius_m":500,"n_demand_cells":16889,"n_existing_assets":1096,"n_candidates_pool":6608},"coverage_steps":[0.3338,0.3348,0.3356,0.3365,0.3374,0.3382,0.3391,0.3399,0.3408,0.3415,0.3423]}
+{"meta": {"city": "london", "asset": "toilets", "service_radius_m": 500.0, "n_demand_cells": 16889, "n_existing_assets": 1096, "n_candidates_pool": 6608, "deprivation_source": "real", "deprivation_zones_joined": 5666}, "coverage_steps": [0.175, 0.1761, 0.1771, 0.178, 0.179, 0.1799, 0.1808, 0.1818, 0.1827, 0.1836, 0.1845]}

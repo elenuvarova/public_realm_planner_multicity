@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"toilets","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":91,"n_candidates_pool":930},"coverage_steps":[0.2603,0.2674,0.2742,0.2809,0.2875,0.2937,0.2998,0.3059,0.3118,0.3176,0.3234]}
+{"meta": {"city": "antwerp", "asset": "toilets", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 91, "n_candidates_pool": 930, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.174, 0.1819, 0.189, 0.1961, 0.2032, 0.2095, 0.2157, 0.2218, 0.228, 0.234, 0.2399]}

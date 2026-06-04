@@ -4,192 +4,192 @@
       "city": "antwerp",
       "asset": "toilets",
       "label": "Antwerpen, Belgium \u00b7 Toilets",
-      "coverage_before": 0.2603,
-      "coverage_after": 0.3234,
+      "coverage_before": 0.174,
+      "coverage_after": 0.2399,
       "n_existing": 91
     },
     {
       "city": "london",
       "asset": "toilets",
       "label": "London, United Kingdom \u00b7 Toilets",
-      "coverage_before": 0.3338,
-      "coverage_after": 0.3423,
+      "coverage_before": 0.175,
+      "coverage_after": 0.1845,
       "n_existing": 1096
     },
     {
       "city": "paris",
       "asset": "toilets",
       "label": "Paris, France \u00b7 Toilets",
-      "coverage_before": 0.9397,
-      "coverage_after": 0.9677,
+      "coverage_before": 0.8501,
+      "coverage_after": 0.8979,
       "n_existing": 588
     },
     {
       "city": "paris",
       "asset": "benches",
       "label": "Paris, France \u00b7 Benches",
-      "coverage_before": 0.997,
-      "coverage_after": 1.0,
+      "coverage_before": 0.9774,
+      "coverage_after": 0.9908,
       "n_existing": 14688
     },
     {
       "city": "antwerp",
       "asset": "benches",
       "label": "Antwerpen, Belgium \u00b7 Benches",
-      "coverage_before": 0.7139,
-      "coverage_after": 0.7439,
+      "coverage_before": 0.618,
+      "coverage_after": 0.655,
       "n_existing": 3050
     },
     {
       "city": "london",
       "asset": "benches",
       "label": "London, United Kingdom \u00b7 Benches",
-      "coverage_before": 0.7182,
-      "coverage_after": 0.7244,
+      "coverage_before": 0.5278,
+      "coverage_after": 0.5345,
       "n_existing": 20841
     },
     {
       "city": "paris",
       "asset": "waste_bins",
       "label": "Paris, France \u00b7 Waste_bins",
-      "coverage_before": 0.9544,
-      "coverage_after": 0.9771,
+      "coverage_before": 0.9364,
+      "coverage_after": 0.959,
       "n_existing": 5767
     },
     {
       "city": "paris",
       "asset": "drinking_water",
       "label": "Paris, France \u00b7 Drinking_water",
-      "coverage_before": 0.9853,
-      "coverage_after": 0.9983,
+      "coverage_before": 0.9286,
+      "coverage_after": 0.9608,
       "n_existing": 1047
     },
     {
       "city": "paris",
       "asset": "fitness_stations",
       "label": "Paris, France \u00b7 Fitness_stations",
-      "coverage_before": 0.4517,
-      "coverage_after": 0.5504,
+      "coverage_before": 0.2734,
+      "coverage_after": 0.3755,
       "n_existing": 270
     },
     {
       "city": "paris",
       "asset": "bike_parking",
       "label": "Paris, France \u00b7 Bike_parking",
-      "coverage_before": 0.9882,
-      "coverage_after": 0.9983,
+      "coverage_before": 0.9695,
+      "coverage_after": 0.985,
       "n_existing": 10924
     },
     {
       "city": "paris",
       "asset": "defibrillators",
       "label": "Paris, France \u00b7 Defibrillators",
-      "coverage_before": 0.9491,
-      "coverage_after": 0.9704,
+      "coverage_before": 0.8531,
+      "coverage_after": 0.897,
       "n_existing": 802
     },
     {
       "city": "paris",
       "asset": "dog_areas",
       "label": "Paris, France \u00b7 Dog_areas",
-      "coverage_before": 0.1902,
-      "coverage_after": 0.3041,
+      "coverage_before": 0.0987,
+      "coverage_after": 0.215,
       "n_existing": 26
     },
     {
       "city": "antwerp",
       "asset": "waste_bins",
       "label": "Antwerpen, Belgium \u00b7 Waste_bins",
-      "coverage_before": 0.6012,
-      "coverage_after": 0.6289,
+      "coverage_before": 0.5089,
+      "coverage_after": 0.5401,
       "n_existing": 1143
     },
     {
       "city": "antwerp",
       "asset": "drinking_water",
       "label": "Antwerpen, Belgium \u00b7 Drinking_water",
-      "coverage_before": 0.3384,
-      "coverage_after": 0.4075,
+      "coverage_before": 0.2351,
+      "coverage_after": 0.3051,
       "n_existing": 94
     },
     {
       "city": "antwerp",
       "asset": "fitness_stations",
       "label": "Antwerpen, Belgium \u00b7 Fitness_stations",
-      "coverage_before": 0.076,
-      "coverage_after": 0.1828,
+      "coverage_before": 0.0365,
+      "coverage_after": 0.1433,
       "n_existing": 25
     },
     {
       "city": "antwerp",
       "asset": "bike_parking",
       "label": "Antwerpen, Belgium \u00b7 Bike_parking",
-      "coverage_before": 0.6438,
-      "coverage_after": 0.6791,
+      "coverage_before": 0.5687,
+      "coverage_after": 0.6078,
       "n_existing": 1604
     },
     {
       "city": "antwerp",
       "asset": "defibrillators",
       "label": "Antwerpen, Belgium \u00b7 Defibrillators",
-      "coverage_before": 0.5811,
-      "coverage_after": 0.6219,
+      "coverage_before": 0.411,
+      "coverage_after": 0.467,
       "n_existing": 250
     },
     {
       "city": "antwerp",
       "asset": "dog_areas",
       "label": "Antwerpen, Belgium \u00b7 Dog_areas",
-      "coverage_before": 0.3241,
-      "coverage_after": 0.4049,
+      "coverage_before": 0.1728,
+      "coverage_after": 0.2604,
       "n_existing": 74
     },
     {
       "city": "london",
       "asset": "waste_bins",
       "label": "London, United Kingdom \u00b7 Waste_bins",
-      "coverage_before": 0.5475,
-      "coverage_after": 0.5522,
+      "coverage_before": 0.3823,
+      "coverage_after": 0.3864,
       "n_existing": 9584
     },
     {
       "city": "london",
       "asset": "drinking_water",
       "label": "London, United Kingdom \u00b7 Drinking_water",
-      "coverage_before": 0.2078,
-      "coverage_after": 0.2165,
+      "coverage_before": 0.1114,
+      "coverage_after": 0.1212,
       "n_existing": 517
     },
     {
       "city": "london",
       "asset": "fitness_stations",
       "label": "London, United Kingdom \u00b7 Fitness_stations",
-      "coverage_before": 0.1975,
-      "coverage_after": 0.2126,
+      "coverage_before": 0.0907,
+      "coverage_after": 0.1059,
       "n_existing": 566
     },
     {
       "city": "london",
       "asset": "bike_parking",
       "label": "London, United Kingdom \u00b7 Bike_parking",
-      "coverage_before": 0.8336,
-      "coverage_after": 0.8378,
+      "coverage_before": 0.6851,
+      "coverage_after": 0.6902,
       "n_existing": 27222
     },
     {
       "city": "london",
       "asset": "defibrillators",
       "label": "London, United Kingdom \u00b7 Defibrillators",
-      "coverage_before": 0.2365,
-      "coverage_after": 0.2444,
+      "coverage_before": 0.1311,
+      "coverage_after": 0.1402,
       "n_existing": 583
     },
     {
       "city": "london",
       "asset": "dog_areas",
       "label": "London, United Kingdom \u00b7 Dog_areas",
-      "coverage_before": 0.0497,
-      "coverage_after": 0.0645,
+      "coverage_before": 0.0236,
+      "coverage_after": 0.0395,
       "n_existing": 80
     }
   ]

@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"drinking_water","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":94,"n_candidates_pool":939},"coverage_steps":[0.3384,0.3464,0.3544,0.362,0.3693,0.3758,0.3824,0.3889,0.3954,0.4016,0.4075]}
+{"meta": {"city": "antwerp", "asset": "drinking_water", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 94, "n_candidates_pool": 939, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.2351, 0.2432, 0.2511, 0.2587, 0.266, 0.2725, 0.2791, 0.2856, 0.2921, 0.2987, 0.3051]}

@@ -1,1 +1,1 @@
-{"meta":{"city":"paris","asset":"fitness_stations","service_radius_m":500,"n_demand_cells":1118,"n_existing_assets":270,"n_candidates_pool":441},"coverage_steps":[0.4517,0.4636,0.4738,0.4839,0.4938,0.5033,0.5127,0.5221,0.5316,0.541,0.5504]}
+{"meta": {"city": "paris", "asset": "fitness_stations", "service_radius_m": 500.0, "n_demand_cells": 1118, "n_existing_assets": 270, "n_candidates_pool": 441, "deprivation_source": "real", "deprivation_zones_joined": 645}, "coverage_steps": [0.2734, 0.2853, 0.2966, 0.3073, 0.3178, 0.3277, 0.3377, 0.3472, 0.3566, 0.3661, 0.3755]}

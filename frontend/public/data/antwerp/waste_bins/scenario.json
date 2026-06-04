@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"waste_bins","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":1143,"n_candidates_pool":1032},"coverage_steps":[0.6012,0.6045,0.6076,0.6104,0.6131,0.6159,0.6186,0.6213,0.6239,0.6264,0.6289]}
+{"meta": {"city": "antwerp", "asset": "waste_bins", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 1143, "n_candidates_pool": 1032, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.5089, 0.5127, 0.5163, 0.5198, 0.5231, 0.5262, 0.5291, 0.5319, 0.5346, 0.5374, 0.5401]}

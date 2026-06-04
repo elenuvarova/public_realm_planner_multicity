@@ -1,1 +1,1 @@
-{"meta":{"city":"london","asset":"dog_areas","service_radius_m":500,"n_demand_cells":16889,"n_existing_assets":80,"n_candidates_pool":6745},"coverage_steps":[0.0497,0.0515,0.0533,0.0548,0.0563,0.0577,0.0591,0.0605,0.0618,0.0632,0.0645]}
+{"meta": {"city": "london", "asset": "dog_areas", "service_radius_m": 500.0, "n_demand_cells": 16889, "n_existing_assets": 80, "n_candidates_pool": 6745, "deprivation_source": "real", "deprivation_zones_joined": 5666}, "coverage_steps": [0.0236, 0.0255, 0.0272, 0.0289, 0.0305, 0.0321, 0.0337, 0.0352, 0.0367, 0.0381, 0.0395]}

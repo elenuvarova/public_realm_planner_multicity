@@ -1,1 +1,1 @@
-{"meta":{"city":"london","asset":"waste_bins","service_radius_m":500,"n_demand_cells":16889,"n_existing_assets":9584,"n_candidates_pool":6318},"coverage_steps":[0.5475,0.5479,0.5484,0.5489,0.5494,0.5498,0.5503,0.5508,0.5512,0.5517,0.5522]}
+{"meta": {"city": "london", "asset": "waste_bins", "service_radius_m": 500.0, "n_demand_cells": 16889, "n_existing_assets": 9584, "n_candidates_pool": 6318, "deprivation_source": "real", "deprivation_zones_joined": 5666}, "coverage_steps": [0.3823, 0.3827, 0.3831, 0.3835, 0.3839, 0.3843, 0.3847, 0.3852, 0.3856, 0.386, 0.3864]}

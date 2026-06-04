@@ -1,1 +1,1 @@
-{"meta":{"city":"paris","asset":"benches","service_radius_m":500,"n_demand_cells":1118,"n_existing_assets":14688,"n_candidates_pool":68},"coverage_steps":[0.997,0.9981,0.9991,0.9994,0.9996,0.9998,1]}
+{"meta": {"city": "paris", "asset": "benches", "service_radius_m": 500.0, "n_demand_cells": 1118, "n_existing_assets": 14688, "n_candidates_pool": 68, "deprivation_source": "real", "deprivation_zones_joined": 645}, "coverage_steps": [0.9774, 0.9806, 0.9822, 0.9835, 0.9848, 0.986, 0.9872, 0.9883, 0.9892, 0.9901, 0.9908]}

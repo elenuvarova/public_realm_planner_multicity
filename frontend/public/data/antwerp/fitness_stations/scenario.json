@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"fitness_stations","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":25,"n_candidates_pool":923},"coverage_steps":[0.076,0.0896,0.1025,0.1147,0.1259,0.1361,0.1459,0.1556,0.1652,0.1742,0.1828]}
+{"meta": {"city": "antwerp", "asset": "fitness_stations", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 25, "n_candidates_pool": 923, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.0365, 0.0501, 0.063, 0.0752, 0.0864, 0.0966, 0.1064, 0.1161, 0.1257, 0.1347, 0.1433]}

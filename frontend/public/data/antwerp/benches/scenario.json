@@ -1,1 +1,1 @@
-{"meta":{"city":"antwerp","asset":"benches","service_radius_m":500,"n_demand_cells":2310,"n_existing_assets":3050,"n_candidates_pool":988},"coverage_steps":[0.7139,0.7186,0.7223,0.7257,0.7286,0.7313,0.7339,0.7364,0.7389,0.7414,0.7439]}
+{"meta": {"city": "antwerp", "asset": "benches", "service_radius_m": 500.0, "n_demand_cells": 2310, "n_existing_assets": 3050, "n_candidates_pool": 988, "deprivation_source": "real", "deprivation_zones_joined": 261}, "coverage_steps": [0.618, 0.6233, 0.6285, 0.6329, 0.6365, 0.6398, 0.6431, 0.6462, 0.6493, 0.6523, 0.655]}

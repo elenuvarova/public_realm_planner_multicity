@@ -1,1 +1,1 @@
-{"meta":{"city":"paris","asset":"toilets","service_radius_m":500,"n_demand_cells":1118,"n_existing_assets":588,"n_candidates_pool":312},"coverage_steps":[0.9397,0.9453,0.9486,0.9519,0.9549,0.9576,0.9601,0.9623,0.9642,0.966,0.9677]}
+{"meta": {"city": "paris", "asset": "toilets", "service_radius_m": 500.0, "n_demand_cells": 1118, "n_existing_assets": 588, "n_candidates_pool": 312, "deprivation_source": "real", "deprivation_zones_joined": 645}, "coverage_steps": [0.8501, 0.8561, 0.8617, 0.8669, 0.8719, 0.8767, 0.8813, 0.8858, 0.8899, 0.8939, 0.8979]}
