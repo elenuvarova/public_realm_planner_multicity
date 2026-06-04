@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Spinner } from "./Status";
 import { MAP_COLORS, SCORE_RAMP } from "../mapColors";
 
@@ -47,6 +48,15 @@ export default function ControlPanel({
   userSiteCount = 0,
   onClearSites,
 }) {
+  const [planOpen, setPlanOpen] = useState(false);
+  // collapsing while placing sites would leave the map silently capturing clicks
+  const togglePlanSection = () => {
+    setPlanOpen((open) => {
+      if (open && planMode) onTogglePlan?.(); // exit plan mode on collapse
+      return !open;
+    });
+  };
+
   const gain = coverageAfter - coverageBefore;
   const meta = scenario?.meta ?? {};
   const assetLabel = ASSET_LABELS[asset] ?? asset ?? "assets";
@@ -144,37 +154,49 @@ export default function ControlPanel({
       </section>
 
       <section className="panel-section">
-        <h3>What-if planner</h3>
         <button
-          className={`plan-btn ${planMode ? "plan-btn--active" : ""}`}
-          onClick={onTogglePlan}
-          disabled={!gridReady}
-          aria-pressed={planMode}
+          className="panel-collapse"
+          onClick={togglePlanSection}
+          aria-expanded={planOpen}
+          aria-controls="whatif-body"
         >
-          {planMode ? "✓ Done placing" : "✎ Place your own sites"}
+          <h3>What-if planner</h3>
+          <span className="panel-collapse__meta">{(gapEstimate.pct * 100).toFixed(0)}%</span>
+          <span className={`panel-collapse__chev ${planOpen ? "panel-collapse__chev--open" : ""}`} />
         </button>
 
-        {!gridReady ? (
-          <p className="plan-hint">Loading the score grid…</p>
-        ) : planMode ? (
-          <p className="plan-hint">Click the map to drop a candidate · click a pin to remove it.</p>
-        ) : null}
+        <div id="whatif-body" hidden={!planOpen}>
+          <button
+            className={`plan-btn ${planMode ? "plan-btn--active" : ""}`}
+            onClick={onTogglePlan}
+            disabled={!gridReady}
+            aria-pressed={planMode}
+          >
+            {planMode ? "✓ Done placing" : "✎ Place your own sites"}
+          </button>
 
-        <div className="plan-readout" aria-live="polite">
-          <span className="plan-pct">{(gapEstimate.pct * 100).toFixed(0)}%</span>
-          <span className="plan-pct-label">of the service gap within reach</span>
+          {!gridReady ? (
+            <p className="plan-hint">Loading the score grid…</p>
+          ) : planMode ? (
+            <p className="plan-hint">Click the map to drop a candidate · click a pin to remove it.</p>
+          ) : null}
+
+          <div className="plan-readout" aria-live="polite">
+            <span className="plan-pct">{(gapEstimate.pct * 100).toFixed(0)}%</span>
+            <span className="plan-pct-label">of the service gap within reach</span>
+          </div>
+          <p className="plan-sub">
+            {gapEstimate.reached.toLocaleString()} of {gapEstimate.total.toLocaleString()} underserved
+            cells · {userSiteCount} of your sites
+          </p>
+          {userSiteCount > 0 && (
+            <button className="plan-clear" onClick={onClearSites}>Clear my sites</button>
+          )}
+          <p className="plan-caveat">
+            Straight-line estimate — approximates walking reach. The headline coverage above uses the
+            full walking network.
+          </p>
         </div>
-        <p className="plan-sub">
-          {gapEstimate.reached.toLocaleString()} of {gapEstimate.total.toLocaleString()} underserved
-          cells · {userSiteCount} of your sites
-        </p>
-        {userSiteCount > 0 && (
-          <button className="plan-clear" onClick={onClearSites}>Clear my sites</button>
-        )}
-        <p className="plan-caveat">
-          Straight-line estimate — approximates walking reach. The headline coverage above uses the
-          full walking network.
-        </p>
       </section>
 
       <section className="panel-section note panel-section--footer">
