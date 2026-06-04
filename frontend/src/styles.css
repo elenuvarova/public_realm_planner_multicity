@@ -103,7 +103,7 @@
   /* — focus ring — */
   --ring: 0 0 0 3px rgba(249, 115, 22, 0.35);
 
-  --font-sans: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  --font-sans: "Inter", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
