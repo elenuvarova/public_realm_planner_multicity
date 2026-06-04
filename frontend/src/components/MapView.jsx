@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { MapContainer, TileLayer, GeoJSON, Circle, Marker, Popup, Tooltip, ZoomControl } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { SCORE_RAMP, MAP_COLORS, scoreColor } from "../mapColors";
 
 const SERVICE_RADIUS_M = 500;
 
@@ -21,18 +23,6 @@ function escapeHtml(s) {
   );
 }
 
-// Colorblind-safe sequential ColorBrewer YlOrRd 5-class ramp.
-// Higher Score = better served = paler yellow; lower = underserved = dark red.
-const SCORE_RAMP = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
-
-function scoreColor(score) {
-  if (score >= 86) return "#ffffb2";
-  if (score >= 79) return "#fecc5c";
-  if (score >= 72) return "#fd8d3c";
-  if (score >= 65) return "#f03b20";
-  return "#bd0026";
-}
-
 function unitStyle(feature) {
   return {
     fillColor: scoreColor(feature.properties.Score ?? 50),
@@ -46,7 +36,7 @@ function unitStyle(feature) {
 function poiPointToLayer(_, latlng) {
   return L.circleMarker(latlng, {
     radius: 2.5,
-    fillColor: "#8b5cf6",
+    fillColor: MAP_COLORS.poi,
     color: "transparent",
     weight: 0,
     fillOpacity: 0.45,
@@ -80,6 +70,7 @@ function onEachUnit(feature, layer) {
 
 export default function MapView({ center, zoom = 12, units, assets, selectedFeatures, pois, layers, asset }) {
   const assetName = ASSET_SINGULAR[asset] ?? "Facility";
+  const [legendOpen, setLegendOpen] = useState(false);
   const assetCoords = assets?.features?.map((f) => ({
     lng: f.geometry.coordinates[0],
     lat: f.geometry.coordinates[1],
@@ -126,9 +117,9 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
             center={[a.lat, a.lng]}
             radius={SERVICE_RADIUS_M}
             pathOptions={{
-              color: "#3b82f6",
+              color: MAP_COLORS.existing,
               weight: 0,
-              fillColor: "#3b82f6",
+              fillColor: MAP_COLORS.existing,
               fillOpacity: 0.07,
             }}
           />
@@ -144,9 +135,9 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
               center={[lat, lng]}
               radius={SERVICE_RADIUS_M}
               pathOptions={{
-                color: "#f97316",
+                color: MAP_COLORS.recommended,
                 weight: 0,
-                fillColor: "#f97316",
+                fillColor: MAP_COLORS.recommended,
                 fillOpacity: 0.12,
               }}
             />
@@ -161,7 +152,7 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
           pointToLayer={(_, latlng) =>
             L.circleMarker(latlng, {
               radius: 4,
-              fillColor: "#3b82f6",
+              fillColor: MAP_COLORS.existing,
               color: "#fff",
               weight: 1.5,
               fillOpacity: 0.9,
@@ -203,52 +194,53 @@ export default function MapView({ center, zoom = 12, units, assets, selectedFeat
         })}
     </MapContainer>
 
-      {/* always-visible map legend; MapView supplies all colors inline */}
-      <div className="map-legend">
-        <div className="map-legend__title">Service-gap score</div>
-        <div className="map-legend__ramp">
-          {SCORE_RAMP.map((hex) => (
-            <span
-              key={hex}
-              className="map-legend__swatch"
-              style={{ backgroundColor: hex }}
-            />
-          ))}
+      {/* collapsible map legend; MapView supplies all colors inline.
+          Collapsed = compact header (title + mini ramp); click to expand details. */}
+      <div className={`map-legend ${legendOpen ? "map-legend--open" : ""}`}>
+        <button
+          type="button"
+          className="map-legend__header"
+          onClick={() => setLegendOpen((o) => !o)}
+          aria-expanded={legendOpen}
+          aria-controls="map-legend-body"
+        >
+          <span className="map-legend__title">Service-gap score</span>
+          <span className="map-legend__ramp" aria-hidden="true">
+            {SCORE_RAMP.map((hex) => (
+              <span
+                key={hex}
+                className="map-legend__swatch"
+                style={{ backgroundColor: hex }}
+              />
+            ))}
+          </span>
+          <span className="map-legend__chevron" aria-hidden="true" />
+        </button>
+
+        <div className="map-legend__body" id="map-legend-body" hidden={!legendOpen}>
+          <div className="map-legend__scale">
+            <span>Well served</span>
+            <span>Underserved</span>
+          </div>
+          <ul className="map-legend__items">
+            <li className="map-legend__item">
+              <span className="map-legend__dot" style={{ backgroundColor: MAP_COLORS.recommended }} />
+              Recommended site
+            </li>
+            <li className="map-legend__item">
+              <span className="map-legend__dot" style={{ backgroundColor: MAP_COLORS.existing }} />
+              Existing {assetName.toLowerCase()}
+            </li>
+            <li className="map-legend__item">
+              <span className="map-legend__dot" style={{ backgroundColor: MAP_COLORS.coverage }} />
+              500 m coverage
+            </li>
+            <li className="map-legend__item">
+              <span className="map-legend__dot" style={{ backgroundColor: MAP_COLORS.poi }} />
+              Demand POI
+            </li>
+          </ul>
         </div>
-        <div className="map-legend__scale">
-          <span>Well served</span>
-          <span>Underserved</span>
-        </div>
-        <ul className="map-legend__items">
-          <li className="map-legend__item">
-            <span
-              className="map-legend__dot"
-              style={{ backgroundColor: "#f97316" }}
-            />
-            Recommended site
-          </li>
-          <li className="map-legend__item">
-            <span
-              className="map-legend__dot"
-              style={{ backgroundColor: "#3b82f6" }}
-            />
-            Existing {assetName.toLowerCase()}
-          </li>
-          <li className="map-legend__item">
-            <span
-              className="map-legend__dot"
-              style={{ backgroundColor: "rgba(59, 130, 246, 0.18)" }}
-            />
-            500 m coverage
-          </li>
-          <li className="map-legend__item">
-            <span
-              className="map-legend__dot"
-              style={{ backgroundColor: "#8b5cf6" }}
-            />
-            Demand POI
-          </li>
-        </ul>
       </div>
 
       {/* text alternative to the color map for screen readers */}
