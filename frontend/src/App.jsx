@@ -150,7 +150,7 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <div className="header-top">
-          <h1>Public Realm Planner</h1>
+          <h1>City Planner</h1>
           <div className="mode-toggle">
             <button
               className={`mode-btn ${mode === "map" ? "active" : ""}`}

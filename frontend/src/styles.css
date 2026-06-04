@@ -302,7 +302,7 @@ button {
 }
 
 /* pinned to the bottom of the panel when there's spare height (Figma "fill") */
-.panel-section--footer { margin-top: auto; }
+.panel-section--footer { margin-top: auto; padding-top: var(--sp-3); padding-bottom: var(--sp-3); }
 .panel-section--footer.note { border-top: 1px solid var(--c-border-soft); }
 
 .panel-section h3 {

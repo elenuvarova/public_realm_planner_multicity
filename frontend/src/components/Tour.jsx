@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 const STEPS = [
   {
     target: null,
-    title: "Welcome to Public Realm Planner",
+    title: "Welcome to City Planner",
     body: "This tool helps city planners find optimal locations for new public infrastructure — toilets, benches, bike parking, and more — using walking-network gap scores and real deprivation data from Paris, Antwerp, and London.",
   },
   {
@@ -97,7 +97,7 @@ export default function Tour({ onDone }) {
       {/* backdrop — when no target, full dark; with target, handled by ring shadow */}
       {!rect && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.72)", zIndex: 9998 }}
+          style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.70)", zIndex: 9998 }}
           onClick={onDone}
         />
       )}
@@ -113,7 +113,7 @@ export default function Tour({ onDone }) {
             height: rect.height + 10,
             borderRadius: 6,
             border: "2px solid #f97316",
-            boxShadow: "0 0 0 9999px rgba(15,23,42,0.65)",
+            boxShadow: "0 0 0 9999px rgba(15,23,42,0.70)",
             zIndex: 9999,
             pointerEvents: "none",
           }}
