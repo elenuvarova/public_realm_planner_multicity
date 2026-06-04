@@ -48,10 +48,11 @@ def write_outputs(
     report["n_grid_cells"] = len(grid)
 
     # --- analysis units (choropleth) ---
-    # Only the columns the frontend actually renders (color + tooltips). Coordinates
-    # are rounded to 5 dp (~1.1 m) — far finer than the ~200 m hex cells need, and a
-    # large size win on the biggest file the app fetches.
-    units_out = _trim_gdf(grid, ["Score", "GapScore", "EquityIndex"])
+    # Columns the frontend renders (color + tooltips) plus dist_to_nearest_m, the
+    # actual walking-network distance to the nearest existing asset — the what-if
+    # planner needs it to define "underserved" as literally >500 m on foot, not a
+    # normalized GapScore band. Coordinates rounded to 5 dp (~1.1 m).
+    units_out = _trim_gdf(grid, ["Score", "GapScore", "EquityIndex", "dist_to_nearest_m"])
     units_out.to_file(base / "units.geojson", driver="GeoJSON", COORDINATE_PRECISION=5)
 
     # --- existing assets ---
