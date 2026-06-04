@@ -228,7 +228,7 @@ export default function ReportView({
               </tbody>
             </table>
 
-            <h2 style={{ marginTop: "1.2rem" }}>Limitations</h2>
+            <h2>Limitations</h2>
             <ul className="r-list">
               <li>
                 Walking distance snaps cells and assets to the nearest

@@ -772,7 +772,7 @@ button {
 .conf {
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
-  padding: 1px var(--sp-1_5);
+  padding: var(--sp-0_5) var(--sp-1_5);
   border-radius: var(--radius-pill);
   white-space: nowrap;
 }
