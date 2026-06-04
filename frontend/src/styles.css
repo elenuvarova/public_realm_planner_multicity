@@ -5,7 +5,7 @@
    ========================================================================== */
 :root {
   /* — type scale (1rem = 16px) — */
-  --fs-2xs: 0.875rem;   /* 14px — micro labels (floor) */
+  --fs-2xs: 0.75rem;    /* 12px — micro labels / uppercase caps */
   --fs-xs:  0.875rem;   /* 14px — captions, tags */
   --fs-sm:  0.9375rem;  /* 15px — secondary body */
   --fs-base:1rem;       /* 16px — body */
@@ -184,9 +184,11 @@ button {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--sp-2);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-medium);
+  gap: var(--sp-1_5);
+  font-size: var(--fs-2xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
   color: var(--c-on-ink-muted);
   cursor: pointer;
 }
