@@ -60,14 +60,22 @@ export function ringCentroid(ring) {
   return [sx / pts.length, sy / pts.length];
 }
 
-/** Centroids of analysis cells whose GapScore exceeds the threshold (underserved). */
-export function underservedCentroids(unitsFeatures, gapThreshold = GAP_THRESHOLD) {
+/**
+ * Centroids of underserved analysis cells. "Underserved" = farther than the
+ * service radius on the walking network from the nearest existing asset, using
+ * the exact `dist_to_nearest_m` when the engine ships it; falls back to the
+ * normalized GapScore band only for data that predates that column.
+ */
+export function underservedCentroids(unitsFeatures, gapThreshold = GAP_THRESHOLD, radiusM = SERVICE_RADIUS_M) {
   if (!Array.isArray(unitsFeatures)) return [];
   const out = [];
   for (const f of unitsFeatures) {
-    if ((f?.properties?.GapScore ?? 0) <= gapThreshold) continue;
-    const ring = f?.geometry?.coordinates?.[0];
-    const c = ringCentroid(ring);
+    const p = f?.properties ?? {};
+    const underserved = Number.isFinite(p.dist_to_nearest_m)
+      ? p.dist_to_nearest_m > radiusM
+      : (p.GapScore ?? 0) > gapThreshold;
+    if (!underserved) continue;
+    const c = ringCentroid(f?.geometry?.coordinates?.[0]);
     if (c) out.push(c);
   }
   return out;

@@ -45,9 +45,12 @@ export default function ControlPanel({
   onTogglePlan,
   gridReady = false,
   gapEstimate = { total: 0, pct: 0, recommendedPct: 0, yoursAddsPct: 0 },
-  userSiteCount = 0,
+  userSites = [],
+  onAddAtCenter,
+  onRemoveSite,
   onClearSites,
 }) {
+  const userSiteCount = userSites.length;
   const [planOpen, setPlanOpen] = useState(false);
   // collapsing while placing sites would leave the map silently capturing clicks
   const togglePlanSection = () => {
@@ -178,13 +181,18 @@ export default function ControlPanel({
           {!gridReady ? (
             <p className="plan-hint">Loading the score grid…</p>
           ) : planMode ? (
-            <p className="plan-hint">Click the map to drop a candidate · click a pin to remove it.</p>
+            <>
+              <p className="plan-hint">Click the map to drop a candidate, or:</p>
+              <button className="plan-add-center" onClick={onAddAtCenter}>
+                + Add at map centre
+              </button>
+            </>
           ) : null}
 
           <div aria-live="polite" role="status">
             <div className="plan-readout">
               <span className="plan-pct">{(gapEstimate.pct * 100).toFixed(0)}%</span>
-              <span className="plan-pct-label">of high-need cells within reach</span>
+              <span className="plan-pct-label">of underserved cells within reach</span>
             </div>
             <p className="plan-sub">
               Recommendations reach {(gapEstimate.recommendedPct * 100).toFixed(0)}%
@@ -195,11 +203,29 @@ export default function ControlPanel({
             </p>
           </div>
           {userSiteCount > 0 && (
-            <button className="plan-clear" onClick={onClearSites}>Clear my sites</button>
+            <>
+              <ul className="plan-site-list" aria-label="Your placed sites">
+                {userSites.map((s, i) => (
+                  <li key={s.id} className="plan-site">
+                    <span className="plan-site__label">
+                      Site {i + 1} · {s.lat.toFixed(4)}, {s.lng.toFixed(4)}
+                    </span>
+                    <button
+                      className="plan-site__remove"
+                      onClick={() => onRemoveSite && onRemoveSite(s.id)}
+                      aria-label={`Remove site ${i + 1}`}
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button className="plan-clear" onClick={onClearSites}>Clear my sites</button>
+            </>
           )}
           <p className="plan-caveat">
-            Straight-line estimate over the highest-gap cells (GapScore&nbsp;&gt;&nbsp;0.5) — not the
-            rigorous walking-network coverage shown above.
+            Cells more than 500&nbsp;m on foot from an existing facility. New sites use a straight-line
+            reach estimate; the coverage figure above is the full walking-network number.
           </p>
         </div>
       </section>

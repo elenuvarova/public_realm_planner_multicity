@@ -87,7 +87,7 @@ function onEachUnit(feature, layer) {
 
 export default function MapView({
   center, zoom = 12, units, assets, selectedFeatures, pois, layers, asset,
-  planMode = false, userSites = [], onAddSite, onRemoveSite,
+  planMode = false, userSites = [], onAddSite, onRemoveSite, mapRef,
 }) {
   const assetName = ASSET_SINGULAR[asset] ?? "Facility";
   const [legendOpen, setLegendOpen] = useState(false);
@@ -107,6 +107,7 @@ export default function MapView({
       aria-label={`Map of ${assetName} service-gap scores and recommended sites`}
     >
     <MapContainer
+      ref={mapRef}
       center={center}
       zoom={zoom}
       className="leaflet-map"

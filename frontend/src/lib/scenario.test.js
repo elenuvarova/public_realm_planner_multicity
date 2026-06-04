@@ -95,6 +95,13 @@ describe("underservedCentroids", () => {
   it("is safe on non-array", () => {
     expect(underservedCentroids(null)).toEqual([]);
   });
+  it("prefers exact dist_to_nearest_m (>500 m) over the GapScore fallback", () => {
+    const sq = [[[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]];
+    // GapScore 0.1 would say "served", but the real walking distance decides
+    const feat = (dist) => ({ properties: { dist_to_nearest_m: dist, GapScore: 0.1 }, geometry: { coordinates: sq } });
+    const cells = underservedCentroids([feat(300), feat(700), feat(500)]);
+    expect(cells).toHaveLength(1); // only 700 m is strictly beyond 500 m
+  });
 });
 
 describe("haversineMeters", () => {

@@ -236,11 +236,18 @@ export default function App() {
   const [planMode, setPlanMode] = useState(false);
   const [userSites, setUserSites] = useState([]); // [{ id, lng, lat }]
   const siteId = useRef(0);
+  const mapRef = useRef(null); // Leaflet map instance (for the keyboard "add at center" path)
   useEffect(() => { setUserSites([]); setPlanMode(false); }, [selection.city, selection.asset]);
 
   const addUserSite = (lng, lat) =>
     setUserSites((s) => [...s, { id: ++siteId.current, lng, lat }]);
   const removeUserSite = (id) => setUserSites((s) => s.filter((p) => p.id !== id));
+  // keyboard-operable alternative to clicking the map: drop a site at the current
+  // map center (the map is arrow-key pannable when focused)
+  const addSiteAtCenter = () => {
+    const m = mapRef.current;
+    if (m) { const c = m.getCenter(); addUserSite(c.lng, c.lat); }
+  };
 
   const underserved = useMemo(
     () => underservedCentroids(units?.features),
@@ -280,6 +287,7 @@ export default function App() {
 
   return (
     <div className="app">
+      <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="app-header">
         <div className="header-top">
           <h1>City Planner</h1>
@@ -345,6 +353,7 @@ export default function App() {
         )}
       </header>
 
+      <main id="main-content" tabIndex={-1} className="app-main">
       {mode === "compare" && (
         <Suspense fallback={<Loader fill message="Loading comparison…" />}>
           <CompareView
@@ -402,7 +411,9 @@ export default function App() {
             onTogglePlan={() => setPlanMode((p) => !p)}
             gridReady={!!units}
             gapEstimate={gapEstimate}
-            userSiteCount={userSites.length}
+            userSites={userSites}
+            onAddAtCenter={addSiteAtCenter}
+            onRemoveSite={removeUserSite}
             onClearSites={() => setUserSites([])}
           />
           {panelOpen && (
@@ -414,6 +425,7 @@ export default function App() {
           )}
           <MapView
             key={`${selection.city}-${selection.asset}`}
+            mapRef={mapRef}
             center={mapCfg.center}
             zoom={mapCfg.zoom}
             units={units}
@@ -436,6 +448,7 @@ export default function App() {
           </button>
         </div>
       )}
+      </main>
 
       {showTour && (
         <Suspense fallback={null}>
