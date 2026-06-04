@@ -50,21 +50,25 @@ jobs:
           restore-keys: |
             osm-cache-${{ runner.os }}-
 
-      # Scheduled runs and manual "run_all" → regenerate every city
+      # Scheduled runs and manual "run_all" → regenerate every city.
+      # Inputs are passed via env (NOT interpolated into the shell) so a crafted
+      # workflow_dispatch value can't inject commands into the runner.
       - name: Run engine — all cities
         if: github.event_name == 'schedule' || github.event.inputs.run_all == 'true'
+        env:
+          SOLVER: ${{ github.event.inputs.solver || 'greedy' }}
         run: |
-          python -m engine.run --all \
-            --solver "${{ github.event.inputs.solver || 'greedy' }}"
+          python -m engine.run --all --solver "$SOLVER"
 
       # Manual single-city run
       - name: Run engine — single city
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.run_all != 'true'
+        env:
+          CITY:   ${{ github.event.inputs.city }}
+          ASSET:  ${{ github.event.inputs.asset }}
+          SOLVER: ${{ github.event.inputs.solver || 'greedy' }}
         run: |
-          python -m engine.run \
-            --city "${{ github.event.inputs.city }}" \
-            --asset "${{ github.event.inputs.asset }}" \
-            --solver "${{ github.event.inputs.solver || 'greedy' }}"
+          python -m engine.run --city "$CITY" --asset "$ASSET" --solver "$SOLVER"
 
       - name: Commit refreshed data
         run: |
