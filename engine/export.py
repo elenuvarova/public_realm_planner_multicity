@@ -48,30 +48,25 @@ def write_outputs(
     report["n_grid_cells"] = len(grid)
 
     # --- analysis units (choropleth) ---
-    units_out = _trim_gdf(grid, ["h3_id", "Score", "GapScore", "EquityIndex",
-                                  "demand_weight", "poi_count", "dist_to_nearest_m", "priority"])
-    units_out.to_file(base / "units.geojson", driver="GeoJSON")
+    # Only the columns the frontend actually renders (color + tooltips). Coordinates
+    # are rounded to 5 dp (~1.1 m) — far finer than the ~200 m hex cells need, and a
+    # large size win on the biggest file the app fetches.
+    units_out = _trim_gdf(grid, ["Score", "GapScore", "EquityIndex"])
+    units_out.to_file(base / "units.geojson", driver="GeoJSON", COORDINATE_PRECISION=5)
 
     # --- existing assets ---
-    assets_out = _trim_gdf(assets, ["asset_type", "name", "open", "accessible", "source"])
-    assets_out.to_file(base / "existing_assets.geojson", driver="GeoJSON")
-
-    # --- all candidates ---
-    if not candidates.empty:
-        cands_out = _trim_gdf(candidates, ["id", "Score", "GapScore", "EquityIndex",
-                                            "demand_weight", "poi_count", "rank"])
-        cands_out.to_file(base / "candidates.geojson", driver="GeoJSON")
+    assets_out = _trim_gdf(assets, ["name", "accessible", "source"])
+    assets_out.to_file(base / "existing_assets.geojson", driver="GeoJSON", COORDINATE_PRECISION=5)
 
     # --- selected (greedy result) ---
     if not selected.empty:
-        sel_out = _trim_gdf(selected, ["id", "rank", "Score", "GapScore",
-                                        "EquityIndex", "demand_weight"])
-        sel_out.to_file(base / "selected.geojson", driver="GeoJSON")
+        sel_out = _trim_gdf(selected, ["id", "rank", "Score", "GapScore", "EquityIndex"])
+        sel_out.to_file(base / "selected.geojson", driver="GeoJSON", COORDINATE_PRECISION=6)
 
     # --- demand POIs (parks/schools/stops) ---
     if not pois.empty:
         pois_out = _trim_gdf(pois, ["poi_type"])
-        pois_out.to_file(base / "demand_pois.geojson", driver="GeoJSON")
+        pois_out.to_file(base / "demand_pois.geojson", driver="GeoJSON", COORDINATE_PRECISION=5)
 
     # --- scenario data for the browser slider ---
     _write_scenario_json(base, grid, candidates, report)
@@ -94,41 +89,25 @@ def _write_scenario_json(
     report: dict,
 ) -> None:
     """
-    Pre-computed scenario data for the client-side greedy slider.
-    Schema matches the browser greedy function in the frontend.
-    """
-    # demand: h3_id → demand_weight
-    demand = {row["h3_id"]: float(row.get("demand_weight", 1.0))
-              for _, row in grid.iterrows() if "h3_id" in row}
+    Pre-computed scenario data for the browser slider.
 
-    cands_list = []
-    for _, row in candidates.iterrows():
-        geom = row.geometry
-        entry = {
-            "id":     row.get("id", ""),
-            "lat":    round(geom.y, 6),
-            "lon":    round(geom.x, 6),
-            "cost":   1,
-            "metrics": {
-                "gap":    float(row.get("GapScore", 0)),
-                "equity": float(row.get("EquityIndex", 0.5)),
-                "demand": float(row.get("demand_weight", 1.0)),
-            },
-        }
-        cands_list.append(entry)
+    The frontend only reads `meta` and `coverage_steps`; the recommendations come
+    from selected.geojson filtered by rank. The full demand map and candidate pool
+    used to be embedded here (~1 MB/city for London) but were never read by the
+    client, so they are intentionally omitted to keep this file tiny.
+    """
+    n_demand_cells = int(grid["h3_id"].notna().sum()) if "h3_id" in grid.columns else len(grid)
 
     scenario = {
         "meta": {
             "city":              report.get("city", ""),
             "asset":             report.get("asset", ""),
             "service_radius_m":  report.get("service_radius_m", 500),
-            "n_demand_cells":    len(demand),
+            "n_demand_cells":    n_demand_cells,
             "n_existing_assets": report.get("n_existing_assets", 0),
             "n_candidates_pool": report.get("n_candidates_pool", 0),
         },
         "coverage_steps": report.get("coverage_steps", []),
-        "demand":         demand,
-        "candidates":     cands_list,
     }
     with open(out_dir / "scenario.json", "w") as f:
         json.dump(scenario, f)
