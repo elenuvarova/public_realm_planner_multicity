@@ -95,7 +95,7 @@ python -m engine.run --all --solver greedy
 ```
 
 This writes GeoJSON into `frontend/public/data/`. The same thing runs in CI via
-`.github/workflows/engine.yml` (weekly + manual dispatch).
+`.github/workflows/engine.yml` (monthly + manual dispatch).
 
 ## Production build (what Coolify runs)
 

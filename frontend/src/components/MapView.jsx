@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { MapContainer, TileLayer, GeoJSON, Circle, Marker, Popup, Tooltip, ZoomControl, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { SCORE_RAMP, MAP_COLORS, scoreColor } from "../mapColors";
-import { REACH_M } from "../lib/scenario";
 
 const SERVICE_RADIUS_M = 500;
 
@@ -92,11 +91,14 @@ export default function MapView({
 }) {
   const assetName = ASSET_SINGULAR[asset] ?? "Facility";
   const [legendOpen, setLegendOpen] = useState(false);
-  const assetCoords = assets?.features?.map((f) => ({
-    lng: f.geometry.coordinates[0],
-    lat: f.geometry.coordinates[1],
-    props: f.properties,
-  })) ?? [];
+  const assetCoords = useMemo(
+    () => assets?.features?.map((f) => ({
+      lng: f.geometry.coordinates[0],
+      lat: f.geometry.coordinates[1],
+      props: f.properties,
+    })) ?? [],
+    [assets]
+  );
 
   return (
     <div
@@ -138,6 +140,7 @@ export default function MapView({
             key={`cov-${i}`}
             center={[a.lat, a.lng]}
             radius={SERVICE_RADIUS_M}
+            interactive={false}
             pathOptions={{
               color: MAP_COLORS.existing,
               weight: 0,
@@ -156,6 +159,7 @@ export default function MapView({
               key={`cov-sel-${feature.properties.rank}`}
               center={[lat, lng]}
               radius={SERVICE_RADIUS_M}
+              interactive={false}
               pathOptions={{
                 color: MAP_COLORS.recommended,
                 weight: 0,
@@ -220,7 +224,7 @@ export default function MapView({
         <Circle
           key={`reach-${s.id}`}
           center={[s.lat, s.lng]}
-          radius={REACH_M}
+          radius={SERVICE_RADIUS_M}
           interactive={false}
           pathOptions={{
             color: MAP_COLORS.recommended,

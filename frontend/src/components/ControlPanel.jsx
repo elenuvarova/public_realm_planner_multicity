@@ -44,7 +44,7 @@ export default function ControlPanel({
   planMode = false,
   onTogglePlan,
   gridReady = false,
-  gapEstimate = { reached: 0, total: 0, pct: 0 },
+  gapEstimate = { total: 0, pct: 0, recommendedPct: 0, yoursAddsPct: 0 },
   userSiteCount = 0,
   onClearSites,
 }) {
@@ -181,20 +181,25 @@ export default function ControlPanel({
             <p className="plan-hint">Click the map to drop a candidate · click a pin to remove it.</p>
           ) : null}
 
-          <div className="plan-readout" aria-live="polite">
-            <span className="plan-pct">{(gapEstimate.pct * 100).toFixed(0)}%</span>
-            <span className="plan-pct-label">of the service gap within reach</span>
+          <div aria-live="polite" role="status">
+            <div className="plan-readout">
+              <span className="plan-pct">{(gapEstimate.pct * 100).toFixed(0)}%</span>
+              <span className="plan-pct-label">of high-need cells within reach</span>
+            </div>
+            <p className="plan-sub">
+              Recommendations reach {(gapEstimate.recommendedPct * 100).toFixed(0)}%
+              {userSiteCount > 0 && (
+                <> · your {userSiteCount} site{userSiteCount > 1 ? "s" : ""} add{" "}
+                  +{(gapEstimate.yoursAddsPct * 100).toFixed(0)}%</>
+              )}
+            </p>
           </div>
-          <p className="plan-sub">
-            {gapEstimate.reached.toLocaleString()} of {gapEstimate.total.toLocaleString()} underserved
-            cells · {userSiteCount} of your sites
-          </p>
           {userSiteCount > 0 && (
             <button className="plan-clear" onClick={onClearSites}>Clear my sites</button>
           )}
           <p className="plan-caveat">
-            Straight-line estimate — approximates walking reach. The headline coverage above uses the
-            full walking network.
+            Straight-line estimate over the highest-gap cells (GapScore&nbsp;&gt;&nbsp;0.5) — not the
+            rigorous walking-network coverage shown above.
           </p>
         </div>
       </section>

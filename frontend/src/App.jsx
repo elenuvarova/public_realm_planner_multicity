@@ -247,11 +247,16 @@ export default function App() {
     [units]
   );
   const gapEstimate = useMemo(() => {
-    const sites = [
-      ...selectedFiltered.map((f) => f.geometry.coordinates),
-      ...userSites.map((p) => [p.lng, p.lat]),
-    ];
-    return gapClosure(underserved, sites, REACH_M);
+    const recs = selectedFiltered.map((f) => f.geometry.coordinates);
+    const mine = userSites.map((p) => [p.lng, p.lat]);
+    const base = gapClosure(underserved, recs, REACH_M);          // recommendations only
+    const all = gapClosure(underserved, [...recs, ...mine], REACH_M); // + your sites
+    return {
+      total: all.total,
+      pct: all.pct,                                  // overall high-need cells within reach
+      recommendedPct: base.pct,                      // closed by the recommendations alone
+      yoursAddsPct: all.total ? (all.reached - base.reached) / all.total : 0, // marginal from your sites
+    };
   }, [underserved, selectedFiltered, userSites]);
 
   // ── tour ──────────────────────────────────────────────────────────────────

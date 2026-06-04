@@ -58,6 +58,7 @@
   --c-brand:        #f97316;
   --c-brand-hover:  #ea6808;
   --c-brand-soft:   #fff7ed;
+  --c-brand-text:   #c2410c; /* AA-safe orange for text on light surfaces (≥4.5:1) */
 
   /* — colour: ink (dark navy surfaces) — */
   --c-ink:   #0f172a;
@@ -394,7 +395,7 @@ button {
 
 .gain-label {
   font-size: var(--fs-sm);
-  color: var(--c-success);
+  color: var(--c-success-text);
   font-weight: var(--fw-semibold);
   margin-top: var(--sp-0_5);
 }
@@ -479,7 +480,7 @@ button {
   margin-left: auto;
   font-size: var(--fs-2xs);
   font-weight: var(--fw-bold);
-  color: var(--c-brand);
+  color: var(--c-brand-text);
   font-variant-numeric: tabular-nums;
 }
 .panel-collapse__chev {
@@ -511,7 +512,7 @@ button {
 .plan-btn--active {
   background: var(--c-brand-soft);
   border-color: var(--c-brand);
-  color: var(--c-brand);
+  color: var(--c-brand-text);
 }
 
 .plan-hint {
@@ -529,7 +530,7 @@ button {
 .plan-pct {
   font-size: var(--fs-2xl);
   font-weight: var(--fw-extrabold);
-  color: var(--c-brand);
+  color: var(--c-brand-text);
   line-height: 1;
   letter-spacing: var(--tracking-tight);
   font-variant-numeric: tabular-nums;

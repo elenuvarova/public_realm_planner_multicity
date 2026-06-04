@@ -28,7 +28,7 @@ def load_city_boundary() -> gpd.GeoDataFrame:
 
 def load_toilets() -> gpd.GeoDataFrame:
     """
-    Fetch all 617 Paris public toilets from opendata.paris.fr.
+    Fetch all Paris public toilets (sanisettes) from opendata.paris.fr.
     Returns GeoDataFrame in EPSG:4326 with columns: id, name, open, accessible.
     """
     print("  fetching Paris toilets from opendata.paris.fr...")
