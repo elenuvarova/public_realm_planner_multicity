@@ -7,12 +7,8 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
+    "compression": "^1.7.4",
     "express": "^4.19.2",
-    "pg": "^8.12.0",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.3"
-  },
-  "optionalDependencies": {
-    "sqlite3": "^5.1.7"
+    "helmet": "^8.0.0"
   }
 }

@@ -1,31 +1,32 @@
 import express from "express";
+import compression from "compression";
+import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
-import sequelize, { dbKind } from "./db.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(express.json());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        "default-src": ["'self'"],
+        "img-src": ["'self'", "data:", "https://*.basemaps.cartocdn.com"],
+        "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        "font-src": ["https://fonts.gstatic.com"],
+        "connect-src": ["'self'"],
+        "script-src": ["'self'"],
+      },
+    },
+  })
+);
+app.use(compression());
+app.use(express.json({ limit: "10kb" }));
 
-app.get("/api/health", async (req, res) => {
-  // Only verify the database when an external Postgres is configured. Without
-  // DATABASE_URL the app still serves its static datasets fine, and the SQLite
-  // driver isn't built into the production (alpine) image — so don't hard-fail.
-  if (dbKind === "postgres") {
-    try {
-      await sequelize.authenticate();
-      return res.json({ status: "ok", db: "postgres" });
-    } catch (err) {
-      return res.status(500).json({ status: "error", db: "postgres", message: err.message });
-    }
-  }
-  res.json({ status: "ok", db: "none" });
-});
-
-app.get("/api/hello", (_req, res) => {
-  res.json({ message: "Hello from the backend 👋" });
+app.get("/api/health", (_req, res) => {
+  res.json({ status: "ok" });
 });
 
 if (process.env.NODE_ENV === "production") {
@@ -37,5 +38,5 @@ if (process.env.NODE_ENV === "production") {
 }
 
 app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}  db: ${dbKind}`);
+  console.log(`server running on port ${PORT}`);
 });
