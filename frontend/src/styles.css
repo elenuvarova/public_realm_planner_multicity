@@ -152,21 +152,21 @@ button {
   color: var(--c-on-ink);
   padding: var(--sp-2) var(--sp-5);
   display: flex;
-  flex-direction: column;
-  gap: var(--sp-2);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sp-4);
   flex-shrink: 0;
+  flex-wrap: wrap;
   z-index: 1000;
 }
 
+/* dissolve header-top into the same flex row as header-selectors */
 .header-top {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
+  display: contents;
 }
 
 .app-header h1 {
-  font-size: var(--fs-md);
+  font-size: var(--fs-base);
   font-weight: var(--fw-bold);
   letter-spacing: 0.01em;
   flex-shrink: 0;
@@ -176,7 +176,7 @@ button {
 .header-selectors {
   display: flex;
   align-items: center;
-  gap: var(--sp-5);
+  gap: var(--sp-4);
   flex-wrap: wrap;
 }
 
@@ -184,11 +184,9 @@ button {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: var(--sp-1_5);
-  font-size: var(--fs-2xs);
-  font-weight: var(--fw-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
+  gap: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
   color: var(--c-on-ink-muted);
   cursor: pointer;
 }
@@ -213,11 +211,12 @@ button {
 .header-select:hover { border-color: #475569; }
 .header-select:focus { border-color: var(--c-brand); }
 
-/* header icon buttons (tour) */
+/* header icon buttons (tour) — pushed to far right */
 .header-actions {
   display: flex;
   gap: var(--sp-1);
   margin-left: auto;
+  order: 99;
 }
 
 .header-icon-btn {
@@ -1117,7 +1116,18 @@ button {
 
 /* mobile: control panel becomes a slide-in drawer */
 @media (max-width: 768px) {
-  .app-header { padding: var(--sp-2) var(--sp-3); }
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--sp-2) var(--sp-3);
+    gap: var(--sp-2);
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+  .header-actions { margin-left: auto; order: 0; }
   .app-header h1 { font-size: var(--fs-sm); }
   .header-selectors { gap: var(--sp-3); width: 100%; }
   .header-select-label { flex: 1; }
