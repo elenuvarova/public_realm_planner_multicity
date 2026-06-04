@@ -124,6 +124,8 @@ html, body, #root {
   color: var(--c-text);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-optical-sizing: auto;
+  font-feature-settings: "ss01" 1, "cv05" 1, "cv08" 1;
 }
 
 button {
@@ -145,6 +147,7 @@ button {
   flex-direction: column;
   height: 100%;
   min-height: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .app-header {
