@@ -34,17 +34,30 @@ export function assetDensityPer10Km2(nExisting, nGridCells) {
 }
 
 // ── what-if planner (client-side straight-line estimate) ─────────────────────
-// The browser can't run the walking-network model, so the interactive planner
-// estimates reach with a straight line shrunk by the same circuity factor the
-// engine uses (≈1.35), and frames the result as "service gap closed" — the gap
-// is exactly what GapScore measures, so this stays honest about what it shows.
+// "Underserved" cells are those beyond the 500 m walking-network distance of an
+// existing asset (exact dist_to_nearest_m shipped per cell). The browser can't run
+// the network model for NEW sites, so reach to a candidate is estimated with a
+// straight line shrunk by the engine's circuity factor (≈1.35) — labelled in the UI
+// as an estimate, distinct from the rigorous walking-network coverage figure.
 
 export const SERVICE_RADIUS_M = 500;
 export const CIRCUITY = 1.35;
 /** Straight-line radius that approximates SERVICE_RADIUS_M on foot. */
 export const REACH_M = SERVICE_RADIUS_M / CIRCUITY;
-/** GapScore above this ≈ a cell beyond the service distance of existing assets. */
+/** Fallback only: GapScore band used when dist_to_nearest_m is absent (legacy data). */
 export const GAP_THRESHOLD = 0.5;
+
+/**
+ * Is an analysis cell underserved — i.e. beyond the 500 m service distance of the
+ * nearest EXISTING asset? Prefer the exact walking-network distance shipped on the
+ * cell (`dist_to_nearest_m`); fall back to the normalized GapScore band only when
+ * that column is missing (older datasets).
+ */
+export function isUnderserved(props) {
+  const d = props?.dist_to_nearest_m;
+  if (Number.isFinite(d)) return d > SERVICE_RADIUS_M;
+  return (props?.GapScore ?? 0) > GAP_THRESHOLD;
+}
 
 /** Average of a polygon's outer-ring vertices → [lng, lat]. Good enough for hex cells. */
 export function ringCentroid(ring) {
@@ -66,15 +79,11 @@ export function ringCentroid(ring) {
  * the exact `dist_to_nearest_m` when the engine ships it; falls back to the
  * normalized GapScore band only for data that predates that column.
  */
-export function underservedCentroids(unitsFeatures, gapThreshold = GAP_THRESHOLD, radiusM = SERVICE_RADIUS_M) {
+export function underservedCentroids(unitsFeatures) {
   if (!Array.isArray(unitsFeatures)) return [];
   const out = [];
   for (const f of unitsFeatures) {
-    const p = f?.properties ?? {};
-    const underserved = Number.isFinite(p.dist_to_nearest_m)
-      ? p.dist_to_nearest_m > radiusM
-      : (p.GapScore ?? 0) > gapThreshold;
-    if (!underserved) continue;
+    if (!isUnderserved(f?.properties)) continue;
     const c = ringCentroid(f?.geometry?.coordinates?.[0]);
     if (c) out.push(c);
   }
