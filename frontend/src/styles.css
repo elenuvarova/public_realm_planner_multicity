@@ -1630,6 +1630,9 @@ button {
   transition: background 0.15s;
 }
 
+.tour-btn--primary { background: var(--c-brand); color: #ffffff; margin-left: auto; }
+.tour-btn--primary:hover { background: var(--c-brand-hover); }
+
 .tour-btn--ghost {
   background: transparent;
   color: var(--c-text-muted);
@@ -1637,34 +1640,6 @@ button {
 }
 
 .tour-btn--ghost:hover { background: var(--c-surface-2); color: var(--c-text-2); }
-
-/* Pill nav buttons with a circular arrow badge (leading for Back,
-   trailing for Next), in the brand colour. */
-.tour-btn--nav {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-2);
-  background: var(--c-brand);
-  color: #ffffff;
-  border-radius: var(--radius-pill);
-  padding: var(--sp-1) var(--sp-4);
-}
-.tour-btn--nav:hover { background: var(--c-brand-hover); }
-.tour-btn--back { padding-left: var(--sp-1); }
-.tour-btn--next { padding-right: var(--sp-1); margin-left: auto; }
-
-.tour-btn__icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 1.625rem;
-  height: 1.625rem;
-  border-radius: var(--radius-pill);
-  background: #ffffff;
-  color: var(--c-brand);
-}
-.tour-btn__icon svg { width: 0.875rem; height: 0.875rem; }
 
 /* ============================================================================
    RESPONSIVE
