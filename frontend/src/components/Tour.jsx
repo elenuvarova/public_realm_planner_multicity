@@ -190,11 +190,27 @@ export default function Tour({ onDone }) {
         <p className="tour-body">{current.body}</p>
         <div className="tour-actions">
           {step > 0 && (
-            <button className="tour-btn tour-btn--ghost" onClick={prev}>← Back</button>
+            <button className="tour-btn tour-btn--nav tour-btn--back" onClick={prev}>
+              <span className="tour-btn__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+              </span>
+              Back
+            </button>
           )}
           <button className="tour-btn tour-btn--ghost tour-skip" onClick={onDone}>Skip</button>
-          <button className="tour-btn tour-btn--primary" onClick={next}>
-            {isLast ? "Done" : "Next →"}
+          <button className="tour-btn tour-btn--nav tour-btn--next" onClick={next}>
+            {isLast ? "Done" : "Next"}
+            <span className="tour-btn__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </span>
           </button>
         </div>
       </div>
