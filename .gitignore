@@ -19,3 +19,6 @@ cache/
 
 # engine outputs ARE committed (served as static data by the web app)
 # do NOT add frontend/public/data/ here
+
+# Playwright MCP scratch
+.playwright-mcp/

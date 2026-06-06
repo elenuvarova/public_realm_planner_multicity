@@ -32,7 +32,7 @@ function CoverageBar({ before, after }) {
         <span className="ccbar-pct">{(before * 100).toFixed(1)}%</span>
       </div>
       <div className="ccbar-row">
-        <span className="ccbar-rowlabel">+10</span>
+        <span className="ccbar-rowlabel" title="Coverage after 10 new facilities">+10</span>
         <div className="ccbar-track">
           <div className="ccbar-fill ccbar-fill--after" style={{ width: `${(after * 100).toFixed(1)}%` }} />
         </div>
@@ -44,8 +44,11 @@ function CoverageBar({ before, after }) {
 
 export default function CompareView({ asset: assetProp, onAssetChange }) {
   const [localAsset, setLocalAsset] = useState(assetProp ?? "toilets");
-  const asset = assetProp ?? localAsset;
   const setAsset = onAssetChange ?? setLocalAsset;
+  // Guard against an unknown asset reaching the /data/${city}/${asset} fetch path
+  // (the tabs only ever set known keys, but the prop is external input).
+  const rawAsset = assetProp ?? localAsset;
+  const asset = rawAsset in ASSET_LABELS ? rawAsset : "toilets";
   const [reports, setReports] = useState({});
   const [loading, setLoading] = useState(true);
 

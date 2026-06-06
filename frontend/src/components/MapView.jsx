@@ -90,6 +90,8 @@ export default function MapView({
   planMode = false, userSites = [], onAddSite, onRemoveSite, mapRef,
 }) {
   const assetName = ASSET_SINGULAR[asset] ?? "Facility";
+  // Collapsed by default (per the owner's preference). The collapsed header still
+  // shows the mini-ramp, so the score-grid colours have a key without taking space.
   const [legendOpen, setLegendOpen] = useState(false);
   const assetCoords = useMemo(
     () => assets?.features?.map((f) => ({

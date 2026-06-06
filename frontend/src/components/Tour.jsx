@@ -15,7 +15,7 @@ const STEPS = [
   {
     target: ".leaflet-map",
     title: "Gap score map",
-    body: "H3 cells coloured by TES priority score. Orange markers = recommended new locations. Enable 'Score grid' in the panel to see which areas are underserved.",
+    body: "H3 cells are coloured by TES priority score — darker red means more underserved. Orange markers are the recommended new locations. Toggle any layer on or off in the panel.",
   },
   {
     target: ".control-panel",
@@ -51,7 +51,8 @@ function getRect(selector) {
   return isOffScreen(rect) ? null : rect;
 }
 
-const CENTERED = { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10000 };
+// z-index comes from the .tour-card class (var(--z-tour)); these only handle placement.
+const CENTERED = { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
 
 function tooltipStyle(rect) {
   if (!rect) return CENTERED;
@@ -65,15 +66,15 @@ function tooltipStyle(rect) {
 
   // prefer below; if near bottom prefer above; if on right prefer left
   if (rect.bottom + 180 < vh) {
-    return { position: "fixed", top: rect.bottom + PAD, left: Math.min(Math.max(rect.left, 12), vw - W - 12), zIndex: 10000 };
+    return { position: "fixed", top: rect.bottom + PAD, left: Math.min(Math.max(rect.left, 12), vw - W - 12) };
   }
   if (rect.top - 180 > 0) {
-    return { position: "fixed", bottom: vh - rect.top + PAD, left: Math.min(Math.max(rect.left, 12), vw - W - 12), zIndex: 10000 };
+    return { position: "fixed", bottom: vh - rect.top + PAD, left: Math.min(Math.max(rect.left, 12), vw - W - 12) };
   }
   if (rect.left > vw / 2) {
-    return { position: "fixed", top: Math.min(rect.top, vh - 220), right: vw - rect.left + PAD, zIndex: 10000 };
+    return { position: "fixed", top: Math.min(rect.top, vh - 220), right: vw - rect.left + PAD };
   }
-  return { position: "fixed", top: Math.min(rect.top, vh - 220), left: rect.right + PAD, zIndex: 10000 };
+  return { position: "fixed", top: Math.min(rect.top, vh - 220), left: rect.right + PAD };
 }
 
 export default function Tour({ onDone }) {
@@ -158,27 +159,17 @@ export default function Tour({ onDone }) {
   return createPortal(
     <>
       {/* backdrop — when no target, full dark; with target, handled by ring shadow */}
-      {!rect && (
-        <div
-          style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.70)", zIndex: 9998 }}
-          onClick={onDone}
-        />
-      )}
+      {!rect && <div className="tour-backdrop" onClick={onDone} />}
 
       {/* highlight ring with cut-out overlay effect */}
       {rect && (
         <div
+          className="tour-ring"
           style={{
-            position: "fixed",
             top:    rect.top    - 5,
             left:   rect.left   - 5,
             width:  rect.width  + 10,
             height: rect.height + 10,
-            borderRadius: 6,
-            border: "2px solid #f97316",
-            boxShadow: "0 0 0 9999px rgba(15,23,42,0.70)",
-            zIndex: 9999,
-            pointerEvents: "none",
           }}
         />
       )}

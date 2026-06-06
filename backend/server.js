@@ -20,14 +20,19 @@ app.use(
       directives: {
         "default-src": ["'self'"],
         // CARTO basemap tiles (see frontend/src/components/MapView.jsx) are
-        // fetched as <img> by Leaflet, hence cartocdn in img-src.
+        // fetched as <img> by Leaflet, hence cartocdn in img-src only — the app
+        // never opens XHR/fetch connections to CARTO, so it stays out of connect-src.
         "img-src": ["'self'", "data:", "https://*.basemaps.cartocdn.com"],
         "style-src": ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         "font-src": ["'self'", "https://fonts.gstatic.com"],
-        "connect-src": ["'self'", "https://*.basemaps.cartocdn.com"],
+        "connect-src": ["'self'"],
         "script-src": ["'self'"],
         "object-src": ["'none'"],
+        "frame-src": ["'none'"],
         "frame-ancestors": ["'self'"],
+        "base-uri": ["'self'"],
+        "form-action": ["'self'"],
+        "upgrade-insecure-requests": [],
       },
     },
   })

@@ -16,6 +16,19 @@ const base = {
   focusable: false,
 };
 
+/**
+ * Brand mark — the favicon hexagon, inline so it sits beside the wordmark.
+ * Not a stroke icon, so it ignores `base`.
+ */
+export function BrandMark(props) {
+  return (
+    <svg viewBox="0 0 32 32" width="20" height="20" aria-hidden="true" focusable="false" {...props}>
+      <polygon points="16,5 24.66,10 24.66,22 16,27 7.34,22 7.34,10" fill="#f97316" />
+      <circle cx="16" cy="16" r="4" fill="var(--c-ink)" />
+    </svg>
+  );
+}
+
 export function IconHelp(props) {
   return (
     <svg {...base} {...props}>

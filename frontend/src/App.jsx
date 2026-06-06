@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
 import MapView from "./components/MapView";
 import ControlPanel from "./components/ControlPanel";
 import { Loader, ErrorState, EmptyState } from "./components/Status";
-import { IconHelp, IconMenu } from "./components/Icons";
+import { IconHelp, IconMenu, BrandMark } from "./components/Icons";
 import { selectByBudget, coverageAt, underservedCentroids, gapClosure, REACH_M } from "./lib/scenario";
 
 // Conditional-only views — code-split so they stay out of the initial bundle.
@@ -60,8 +60,11 @@ function readUrlState() {
   const asset = params.get("asset");
   const n = params.get("n");
   const view = params.get("view");
-  if (city) out.city = city;
-  if (asset) out.asset = asset;
+  // Validate city/asset against the known keys (same spirit as the view check)
+  // so a hand-edited param can never flow unchecked into the /data/${city}/${asset}
+  // fetch path. The data layer still re-validates against index.json.
+  if (city && city in CITY_CONFIG) out.city = city;
+  if (asset && asset in ASSET_LABELS_SHORT) out.asset = asset;
   if (n !== null && /^\d+$/.test(n)) out.n = parseInt(n, 10);
   if (view === "map" || view === "compare") out.view = view;
   return out;
@@ -119,12 +122,14 @@ export default function App() {
   }, []);
 
   // ── layer visibility ───────────────────────────────────────────────────────
+  // Lead with the data layer: the score grid is on by default so the map never
+  // opens as "pins on a white page".
   const [layers, setLayers] = useState({
     coverage: true,
     assets:   true,
     selected: true,
     pois:     false,
-    units:    false,
+    units:    true,
   });
 
   // ── data ──────────────────────────────────────────────────────────────────
@@ -290,7 +295,10 @@ export default function App() {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="app-header">
         <div className="header-top">
-          <h1>City Planner</h1>
+          <h1 className="brand">
+            <BrandMark className="brand-mark" />
+            City Planner
+          </h1>
           <div className="mode-toggle" role="group" aria-label="View mode">
             <button
               className={`mode-btn ${mode === "map" ? "active" : ""}`}

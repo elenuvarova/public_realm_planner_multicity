@@ -90,6 +90,9 @@ export default function ControlPanel({
           value={budget}
           onChange={(e) => onBudgetChange(Number(e.target.value))}
           className="slider"
+          style={{
+            "--slider-fill": `${maxBudget > 1 ? ((budget - 1) / (maxBudget - 1)) * 100 : 0}%`,
+          }}
           aria-label={`Number of new ${assetLabel} to place`}
         />
         <div className="slider-ends">
@@ -100,12 +103,17 @@ export default function ControlPanel({
 
       <section className="panel-section">
         <h3>Coverage (500 m walk)</h3>
-        <CoverageBar label="Before" value={coverageBefore} color={MAP_COLORS.existing} />
         <div aria-live="polite" role="status">
+          <div className="coverage-hero">
+            <span className="coverage-hero__value">{(coverageAfter * 100).toFixed(1)}%</span>
+            <span className="coverage-hero__label">of demand covered</span>
+            {gain > 0.001 && (
+              <span className="coverage-hero__pill">+{(gain * 100).toFixed(1)}%</span>
+            )}
+          </div>
+          <CoverageBar label="Before" value={coverageBefore} color={MAP_COLORS.existing} />
           <CoverageBar label="After" value={coverageAfter} color="var(--c-success)" />
-          {gain > 0.001 ? (
-            <p className="gain-label">+{(gain * 100).toFixed(1)}% more demand covered</p>
-          ) : (
+          {gain <= 0.001 && (
             <p className="gain-label" style={{ color: "var(--c-text-muted)" }}>
               Already well covered — adding more has little effect at this budget.
             </p>
@@ -164,7 +172,9 @@ export default function ControlPanel({
           aria-controls="whatif-body"
         >
           <h3>What-if planner</h3>
-          <span className="panel-collapse__meta">{(gapEstimate.pct * 100).toFixed(0)}%</span>
+          {gridReady && (
+            <span className="panel-collapse__meta">{(gapEstimate.pct * 100).toFixed(0)}%</span>
+          )}
           <span className={`panel-collapse__chev ${planOpen ? "panel-collapse__chev--open" : ""}`} />
         </button>
 
@@ -191,12 +201,15 @@ export default function ControlPanel({
 
           <div aria-live="polite" role="status">
             <div className="plan-readout">
-              <span className="plan-pct">{(gapEstimate.pct * 100).toFixed(0)}%</span>
+              <span className="plan-pct">
+                {gridReady ? `${(gapEstimate.pct * 100).toFixed(0)}%` : "—"}
+              </span>
               <span className="plan-pct-label">of underserved cells within reach</span>
             </div>
             <p className="plan-sub">
-              Recommendations reach {(gapEstimate.recommendedPct * 100).toFixed(0)}%
-              {userSiteCount > 0 && (
+              Recommendations reach{" "}
+              {gridReady ? `${(gapEstimate.recommendedPct * 100).toFixed(0)}%` : "—"}
+              {gridReady && userSiteCount > 0 && (
                 <> · your {userSiteCount} site{userSiteCount > 1 ? "s" : ""} add{" "}
                   +{(gapEstimate.yoursAddsPct * 100).toFixed(0)}%</>
               )}
